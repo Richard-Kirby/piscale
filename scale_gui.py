@@ -40,12 +40,6 @@ class App(tk.Frame):
         self.exit_btn = tk.Button(self.master, text="Exit", command=self.exit)
         self.add_to_meal_btn = tk.Button(self.master, text="Add To Meal", command=self.add_to_meal)
 
-        self.time_label.grid(column=0, row=0)
-        self.weight_disp.grid(column=0, row=1)
-        self.zero_btn.grid(column=1, row=0)
-        self.exit_btn.grid(column=1, row=1)
-        self.add_to_meal_btn.grid(column=2, row=1)
-
         # Connection to database of food.
         self.db_con = sq.connect('food_data.db')
 
@@ -84,21 +78,30 @@ class App(tk.Frame):
                 self.food_tree_view.insert(parent='', index = index, values=(food[1], food[2]), tags=('even'))
             index = index + 1
 
-        # Create the menu TreeView, which tracks the menu
-        self.menu_tree_view = ttk.Treeview(self.master, columns=('FoodName', 'Weight', 'kCal'), show='headings', height=12)
-        self.menu_tree_view.column('FoodName', anchor=tk.CENTER, width=100)
-        self.menu_tree_view.column('Weight', anchor=tk.CENTER, width=80)
-        self.menu_tree_view.column('kCal', anchor=tk.CENTER, width=80)
+        # Create the meal TreeView, which tracks the meal
+        self.meal_tree_view = ttk.Treeview(self.master, columns=('FoodName', 'Weight', 'kCal'), show='headings', height=12)
+        self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=100)
+        self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=80)
+        self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=80)
 
-        self.menu_tree_view.heading('FoodName', text="Food Name")
-        self.menu_tree_view.heading('kCal', text="kCal")
-        self.menu_tree_view.heading('Weight', text="grams")
-
-        self.menu_tree_view.grid(column=2, row=2, columnspan=2)
+        self.meal_tree_view.heading('FoodName', text="Food Name")
+        self.meal_tree_view.heading('kCal', text="kCal")
+        self.meal_tree_view.heading('Weight', text="grams")
 
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
         self.meal_kcal_display = tk.Label(text="0", fg="Red", font=("Helvetica", 15))
+
+        # Button to Remove something from the meal.
+        self.remove_from_meal_btn = tk.Button(self.master, text="Remove From Meal", command=self.remove_from_meal)
+
+        self.time_label.grid(column=0, row=0)
+        self.weight_disp.grid(column=0, row=1)
+        self.zero_btn.grid(column=1, row=0)
+        self.exit_btn.grid(column=1, row=1)
+        self.add_to_meal_btn.grid(column=2, row=1)
+        self.remove_from_meal_btn.grid(column=3, row=1)
+        self.meal_tree_view.grid(column=2, row=2, columnspan=2)
         self.meal_kcal_display.grid(column=3, row=3)
 
 
@@ -147,12 +150,30 @@ class App(tk.Frame):
             food_calories = 0
 
         # Add the food item to the end of the meal list.
-        self.menu_tree_view.insert(parent='',index = tk.END,values=(food_name, food_weight, (f"{food_calories:.0f}")))
+        self.meal_tree_view.insert(parent='',index = tk.END,values=(food_name, food_weight, (f"{food_calories:.0f}")))
         self.meal_total_calories = self.meal_total_calories + food_calories
         self.update_meal_calories()
 
         # Zero out the scale, so it is ready for additional food
         self.hx.zero()
+
+    # Remove an item from the meal
+    def remove_from_meal(self):
+        print("remove from meal")
+        selected = self.meal_tree_view.selection()
+        print("*", selected)
+
+        if len(selected) > 0:
+            remove_food = (self.meal_tree_view.item(selected[0]))
+            print(remove_food)
+            remove_food_name, weight, calories = remove_food["values"]
+
+            print(remove_food_name, weight, calories)
+
+            # Remove the food item to the end of the meal list.
+            self.meal_tree_view.delete(selected[0])
+            self.meal_total_calories = self.meal_total_calories - calories
+            self.update_meal_calories()
 
 
 root = tk.Tk()
