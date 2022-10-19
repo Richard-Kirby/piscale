@@ -54,7 +54,8 @@ with db_con:
         TOTBRFOD FLOAT,
         FACTRANS FLOAT,
         FODTRANS FLOAT,
-        CHOL FLOAT
+        CHOL FLOAT,
+        Favourite BINARY
         );
     """)
 
@@ -64,12 +65,12 @@ sql = 'INSERT INTO FoodData (\
 FoodCode, FoodName,Description, FoodGroup, Previous, Main_data_references, Footnote, WATER, TOTNIT, PROT, FAT, CHO,\
 KCALS,          KJ,       STAR, OLIGO,   TOTSUG,                 GLUC,   GALACT, FRUCT,   SUCR, MALT,LACT,ALCO,\
 ENGFIB,    AOACFIB,     SATFAC,SATFOD,TOTn6PFAC, TOTn6PFOD,TOTn3PFAC,TOTn3PFOD, MONOFACc, MONOFODc,MONOFAC, MONOFOD,\
-POLYFACc, POLYFODc, POLYFAC, POLYFOD, SATFACx6, SATFODx6, TOTBRFAC, TOTBRFOD, FACTRANS, FODTRANS, CHOL)\
+POLYFACc, POLYFODc, POLYFAC, POLYFOD, SATFACx6, SATFODx6, TOTBRFAC, TOTBRFOD, FACTRANS, FODTRANS, CHOL, Favourite)\
 values(\
 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\
 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\
 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\
-?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)'
 
 data = []
 
@@ -87,7 +88,7 @@ with open('McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021Simpli
 with db_con:
     print(sql)
 
-    for data_row in data:
+    for data_row in data[3:]:
         print(data_row)
         db_con.execute(sql, data_row)
 

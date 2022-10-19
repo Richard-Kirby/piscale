@@ -22,7 +22,6 @@ class App(tk.Frame):
         root.columnconfigure(0, weight=1)
         root.columnconfigure(1, weight=1)
         root.columnconfigure(2, weight=1)
-        root.columnconfigure(2, weight=1)
 
         #root.columnconfigure(3, weight=1)
 
@@ -50,11 +49,16 @@ class App(tk.Frame):
         style.map("Treeview")
 
         # List of food and their characteristics.
-        self.food_tree_view = ttk.Treeview(self.master, columns=('FoodName', 'kCal'), show='headings', height=12)
-        self.food_tree_view.column('FoodName', anchor=tk.CENTER, width=320)
-        self.food_tree_view.column('kCal', anchor=tk.CENTER, width=80)
+        self.food_tree_view = ttk.Treeview(self.master, columns=('db_id', 'FoodName', 'kCal', 'Fave'),
+                                           show='headings', height=12)
+
+        self.food_tree_view["displaycolumns"]=('FoodName', 'kCal', 'Fave')
+        self.food_tree_view.column('FoodName', anchor=tk.W, width=320)
+        self.food_tree_view.column('kCal', anchor=tk.E, width=90)
+        self.food_tree_view.column('Fave', anchor=tk.CENTER, width=20)
         self.food_tree_view.heading('FoodName', text="Food Name")
         self.food_tree_view.heading('kCal', text="kCal/100g")
+        self.food_tree_view.heading('Fave', text="Fave")
         self.food_tree_view.grid(column=0, row=2)
 
         sb = ttk.Scrollbar(self.master, orient=tk.VERTICAL) # was frame.
@@ -63,20 +67,8 @@ class App(tk.Frame):
         self.food_tree_view.config(yscrollcommand=sb.set)
         sb.config(command=self.food_tree_view.yview)
 
-        with self.db_con:
-            food_data = self.db_con.execute("SELECT FoodCode, FoodName, KCALS FROM FoodData")
-
-        self.food_tree_view.tag_configure('odd', font=("default",12), background='light grey')
-        self.food_tree_view.tag_configure('even', font=("default",12))
-
-        index =0
-        for food in food_data:
-            # print(food)
-            if index %2:
-                self.food_tree_view.insert(parent='', index = index, values=(food[1], food[2]), tags=('odd'))
-            else:
-                self.food_tree_view.insert(parent='', index = index, values=(food[1], food[2]), tags=('even'))
-            index = index + 1
+        # Populate all the data from the Database of information
+        self.populate_food_data()
 
         # Create the meal TreeView, which tracks the meal
         self.meal_tree_view = ttk.Treeview(self.master, columns=('FoodName', 'Weight', 'kCal'), show='headings', height=12)
@@ -92,8 +84,25 @@ class App(tk.Frame):
         self.meal_total_calories = 0
         self.meal_kcal_display = tk.Label(text="0", fg="Red", font=("Helvetica", 15))
 
+        self.favorite_radio_sel = tk.IntVar()
+
+        fave_radio = tk.Radiobutton(self.master,
+                       text="Favorites",
+                       variable=self.favorite_radio_sel,
+                       command=self.radio_sel,
+                       value=1)
+
+        all_radio = tk.Radiobutton(self.master,
+                       text="All",
+                       variable=self.favorite_radio_sel,
+                       command=self.radio_sel,
+                       value=2)
+
         # Button to Remove something from the meal.
         self.remove_from_meal_btn = tk.Button(self.master, text="Remove From Meal", command=self.remove_from_meal)
+
+        # Buttons to toggle whether a food is a favourite or not, to enable filtering.
+        self.toggle_favourite_btn = tk.Button(self.master, text="Favourite Toggle", command=self.toggle_favourite)
 
         self.time_label.grid(column=0, row=0)
         self.weight_disp.grid(column=0, row=1)
@@ -103,6 +112,30 @@ class App(tk.Frame):
         self.remove_from_meal_btn.grid(column=3, row=1)
         self.meal_tree_view.grid(column=2, row=2, columnspan=2)
         self.meal_kcal_display.grid(column=3, row=3)
+        fave_radio.grid(column=0, row=3)
+        all_radio.grid(column=0, row=4)
+        self.toggle_favourite_btn.grid(column=1, row=3)
+
+    # Grab the data from the Database and add it to the TreeView table.
+    def populate_food_data(self):
+        self.food_tree_view.delete(*self.food_tree_view.get_children())
+
+        with self.db_con:
+            food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
+
+        self.food_tree_view.tag_configure('odd', font=("default",12), background='light grey')
+        self.food_tree_view.tag_configure('even', font=("default",12))
+
+        index =0
+        for food in food_data:
+            # print(food)
+            if index %2:
+                self.food_tree_view.insert(parent='', index = food[0], values=(food[0], food[2], food[3], food[4]),
+                                           tags=('even'))
+            else:
+                self.food_tree_view.insert(parent='', index = food[0], values=(food[0], food[2], food[3], food[4]),
+                                           tags=('odd'))
+            index = index + 1
 
 
     def update_clock(self):
@@ -139,7 +172,7 @@ class App(tk.Frame):
     # Add an item to the meal calculating total meal calories.
     def add_to_meal(self):
         selected = self.food_tree_view.selection()
-        chosenfood = (self.food_tree_view.item(selected[0]))
+        chosenfood = self.food_tree_view.item(selected[0])
         print(chosenfood)
         food_name, calories_per_100 = chosenfood["values"]
         print(self.weight)
@@ -174,6 +207,31 @@ class App(tk.Frame):
             self.meal_tree_view.delete(selected[0])
             self.meal_total_calories = self.meal_total_calories - calories
             self.update_meal_calories()
+
+    def radio_sel(self):
+        print(str(self.favorite_radio_sel.get()))
+
+    def toggle_favourite(self):
+        selected = self.food_tree_view.selection()
+
+        for sel_item in selected:
+            print(sel_item)
+            id = self.food_tree_view.index(sel_item)
+
+            if self.food_tree_view.item(selected[0])["values"][3] == 0:
+                Favourite = 1
+            else:
+                Favourite = 0
+
+
+            print(id, self.food_tree_view.item(sel_item), Favourite)
+
+            # This doesn't seem to be working. 
+            with self.db_con:
+                print(self.db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite , id]))
+
+        time.sleep(1)
+        self.populate_food_data()
 
 
 root = tk.Tk()
