@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import time
 import sqlite3 as sq
+from PIL import Image, ImageTk
 
 
 import HX711 as HX
@@ -18,6 +19,12 @@ class App(tk.Frame):
         style.configure('Treeview', rowheight=20)
         style.map("Treeview")
 
+
+        # Create a photoimage object of the image in the path
+        #fave_img = PhotoImage(file="</home/pi/images/fave.png>")
+
+        # Resize image to fit on button
+        # photoimage = photo.subsample(1, 2)
 
         # Connect to the scale and zero it out.
         # create a SimpleHX711 object using GPIO pin 14 as the data pin,
@@ -59,6 +66,8 @@ class App(tk.Frame):
 
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
+
+        self.meal_kcal_label = tk.Label(text="Meal kCal", font=("Helvetica", 15))
         self.meal_kcal_display = tk.Label(text="0", fg="Red", font=("Helvetica", 15))
 
         self.favorite_radio_sel = tk.IntVar()
@@ -82,7 +91,24 @@ class App(tk.Frame):
         self.remove_from_meal_btn = tk.Button(self.master, text="<-", command=self.remove_from_meal)
 
         # Buttons to toggle whether a food is a favourite or not, to enable filtering.
-        self.toggle_favourite_btn = tk.Button(self.master, text="Fav 0/1", command=self.toggle_favourite)
+        fave_image = ImageTk.PhotoImage(Image.open('/home/kirbypi/piscale/images/star.jpg').resize((20,20)))
+
+        fave_label=tk.Label(image=fave_image)
+
+        self.search_str = tk.StringVar()
+        self.search_box = ttk.Entry(
+            self.master,
+            textvariable= self.search_str
+        )
+        self.search_button = ttk.Button(self.master, text='Search', command=self.search_food_data)
+
+        # print("Entry is ", self.search_box.get())
+
+
+        self.toggle_favourite_btn = tk.Button(self.master,
+                                              #image=fave_image,
+                                              text='F',
+                                              command=self.toggle_favourite)
 
         # Widget placements
         self.time_label.grid(column=0, row=0, columnspan=3)
@@ -91,18 +117,24 @@ class App(tk.Frame):
         self.weight_disp.grid(column=0, row=1, columnspan=2)
         self.zero_btn.grid(column=2, row=1)
 
-        self.food_data_frame.grid(column=0, row=2, columnspan=3, rowspan=15)
+        self.search_box.grid(column=0, row=2, sticky='we')
+        self.search_button.grid(column=1, row=2)
+        fave_label.grid(column=2, row=2)
 
-        self.toggle_favourite_btn.grid(column=3, row=2)
-        fave_radio.grid(column=3, row=3)
-        all_radio.grid(column=3, row=4)
+        self.food_data_frame.grid(column=0, row=3, columnspan=3, rowspan=15)
 
-        self.add_to_meal_btn.grid(column=3, row=6)
-        self.remove_from_meal_btn.grid(column=3, row=7)
+        self.toggle_favourite_btn.grid(column=3, row=3)
 
-        self.meal_frame.grid(column=4, row=2, columnspan=3, rowspan=15)
+        fave_radio.grid(column=3, row=4, sticky='w')
+        all_radio.grid(column=3, row=5, sticky='w')
+
+        self.add_to_meal_btn.grid(column=3, row=7)
+        self.remove_from_meal_btn.grid(column=3, row=8)
+
+        self.meal_frame.grid(column=4, row=3, columnspan=3, rowspan=15)
 
         self.meal_kcal_display.grid(column=6, row=19)
+        self.meal_kcal_label.grid(column=5, row=19)
 
     # Creates the Food Data Tree for selecting food. Puts it into a frame.
     def create_food_data_tree(self, food_data_frame):
@@ -132,6 +164,11 @@ class App(tk.Frame):
         self.food_tree_view.config(yscrollcommand=sb.set)
         sb.config(command=self.food_tree_view.yview)
 
+    def search_food_data(self):
+        search_str = self.search_str.get()
+        print(search_str)
+        self.populate_food_data(search=search_str)
+
     # Creates the meal Tree for showing the meal. Puts it into a frame.
     def create_meal_tree(self, meal_frame):
 
@@ -140,7 +177,8 @@ class App(tk.Frame):
         meal_frame.columnconfigure(1, weight=1)
 
         # Create the meal TreeView, which tracks the meal
-        self.meal_tree_view = ttk.Treeview(meal_frame, columns=('FoodName', 'Weight', 'kCal'), show='headings', height=12)
+        self.meal_tree_view = ttk.Treeview(meal_frame, columns=('FoodName', 'Weight', 'kCal'),
+                                           show='headings', height=12)
         self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=100)
         self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=80)
         self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=80)
@@ -157,13 +195,22 @@ class App(tk.Frame):
         sb.config(command=self.meal_tree_view.yview)
 
     # Grab the data from the Database and add it to the TreeView table.
-    def populate_food_data(self):
+    def populate_food_data(self, search= None):
         self.food_tree_view.delete(*self.food_tree_view.get_children())
+
+        print(f"Search String {search}")
 
         with self.db_con:
             print(self.favorite_radio_sel.get())
             if self.favorite_radio_sel.get() == 0:
-                food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
+                if search is None:
+                    print("search is None")
+                    food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
+                else:
+                    search = f"%{search}%"
+                    print(f"Search String 2 {search}")
+                    food_data = self.db_con.execute(
+                        "SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData WHERE FoodName LIKE ?",(search,))
             else:
                 food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData"
                                                 " WHERE Favourite=1")
