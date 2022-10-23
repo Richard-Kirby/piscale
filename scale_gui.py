@@ -1,12 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 import time
+from datetime import datetime
 import sqlite3 as sq
 import pathlib
 from PIL import Image, ImageTk
-
-# Current working directory
-cwd = pathlib.Path.cwd()
 
 mod_path = pathlib.Path(__file__).parent
 # print(mod_path)
@@ -45,18 +43,19 @@ class App(tk.Frame):
 
 
         # Configure the grid for all the widgets.
-        root.columnconfigure(0, weight=1)
-        root.columnconfigure(1, weight=1)
+        root.columnconfigure(0, weight=2)
+        root.columnconfigure(1, weight=2)
         root.columnconfigure(2, weight=1)
-        root.columnconfigure(3, weight=1)
-        root.columnconfigure(4, weight=1)
-        root.columnconfigure(5, weight=1)
-        root.columnconfigure(6, weight=1)
+        root.columnconfigure(3, weight=2)
+        root.columnconfigure(4, weight=2)
+        root.columnconfigure(5, weight=2)
+        root.columnconfigure(6, weight=2)
 
         # Connection to database of food.
         self.db_con = sq.connect(f'{mod_path}/food_data.db')
+        self.history_db_con = sq.connect(f'{mod_path}/history.db')
 
-        self.time_label = tk.Label(text="", fg="Blue", font=("Helvetica", 18))
+        self.time_label = tk.Label(text="", fg="Black", font=("Helvetica", 18))
 
         self.zero_btn = tk.Button(self.master, text="Zero", command=self.zero)
         self.exit_btn = tk.Button(self.master, text="Exit", command=self.exit)
@@ -69,6 +68,11 @@ class App(tk.Frame):
         self.meal_frame = tk.Frame(master)
         # Create the Food Data Tree
         self.create_meal_tree(self.meal_frame)
+
+        self.calorie_history_frame = tk.Frame(master)
+        # Create the Food Data Tree
+        self.create_calorie_history_tree(self.calorie_history_frame)
+
 
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
@@ -92,6 +96,7 @@ class App(tk.Frame):
 
         # Populate all the data from the Database of information
         self.populate_food_data()
+        self.populate_history()
 
         # Button to Remove something from the meal.
         self.remove_from_meal_btn = tk.Button(self.master, text="<-", command=self.remove_from_meal)
@@ -116,18 +121,24 @@ class App(tk.Frame):
                                               text='F',
                                               command=self.toggle_favourite)
 
+        self.add_to_history_button = tk.Button(self.master,
+                                              #image=fave_image,
+                                              text='Add',
+                                              command=self.add_to_history)
+
         # Widget placements
-        self.time_label.grid(column=0, row=0, columnspan=3)
-        self.exit_btn.grid(column=6, row=0)
+        self.time_label.grid(column=3, row=0, columnspan=3, sticky='e')
 
-        self.weight_disp.grid(column=0, row=1, columnspan=2)
-        self.zero_btn.grid(column=2, row=1)
+        self.exit_btn.grid(column=6, row=0, sticky ='e')
 
-        self.search_box.grid(column=0, row=2, sticky='we')
-        self.search_button.grid(column=1, row=2)
+        self.weight_disp.grid(column=1, row=0, columnspan=1, sticky='e')
+        self.zero_btn.grid(column=2, row=0, sticky='w')
+
+        self.search_box.grid(column=0, row=2, sticky='we', columnspan=2)
+        self.search_button.grid(column=2, row=2, sticky='w')
         fave_label.grid(column=2, row=2)
 
-        self.food_data_frame.grid(column=0, row=3, columnspan=3, rowspan=15)
+        self.food_data_frame.grid(column=0, row=3, columnspan=3, rowspan=21)
 
         self.toggle_favourite_btn.grid(column=3, row=3)
 
@@ -138,6 +149,10 @@ class App(tk.Frame):
         self.remove_from_meal_btn.grid(column=3, row=8)
 
         self.meal_frame.grid(column=4, row=3, columnspan=3, rowspan=15)
+
+        self.add_to_history_button.grid(column=4, row=19)
+
+        self.calorie_history_frame.grid(column=4, row=20, columnspan=3, rowspan=10)
 
         self.meal_kcal_display.grid(column=6, row=19)
         self.meal_kcal_label.grid(column=5, row=19)
@@ -153,7 +168,7 @@ class App(tk.Frame):
 
         # List of food and their characteristics.
         self.food_tree_view = ttk.Treeview(food_data_frame, columns=('db_id', 'FoodName', 'kCal', 'Fave'),
-                                           show='headings', height=12)
+                                           show='headings', height=18)
 
         self.food_tree_view["displaycolumns"]=('FoodName', 'kCal', 'Fave')
         self.food_tree_view.column('FoodName', anchor=tk.W, width=320)
@@ -184,7 +199,7 @@ class App(tk.Frame):
 
         # Create the meal TreeView, which tracks the meal
         self.meal_tree_view = ttk.Treeview(meal_frame, columns=('FoodName', 'Weight', 'kCal'),
-                                           show='headings', height=12)
+                                           show='headings', height=10)
         self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=100)
         self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=80)
         self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=80)
@@ -199,6 +214,35 @@ class App(tk.Frame):
 
         self.meal_tree_view.config(yscrollcommand=sb.set)
         sb.config(command=self.meal_tree_view.yview)
+
+    # Creates the calorie history tree for showing the consumed calories. Puts it into a frame.
+    def create_calorie_history_tree(self, calorie_history_frame):
+
+        # Set up frame to have 2 columns
+        calorie_history_frame.columnconfigure(0, weight=4)
+        calorie_history_frame.columnconfigure(1, weight=1)
+
+        # Create the meal TreeView, which tracks the meal
+        self.calorie_history_view = ttk.Treeview(calorie_history_frame, columns=('db_id','Date', 'Weight', 'kCal'),
+                                           show='headings', height=5)
+
+        self.calorie_history_view["displaycolumns"] = ('Date', 'kCal')
+
+        self.calorie_history_view.column('Date', anchor=tk.CENTER, width=180)
+        # self.calorie_history_view.column('Weight', anchor=tk.CENTER, width=80)
+        self.calorie_history_view.column('kCal', anchor=tk.CENTER, width=80)
+
+        self.calorie_history_view.heading('Date', text="Date")
+        self.calorie_history_view.heading('kCal', text="kCal")
+        #self.calorie_history_view.heading('Weight', text="grams")
+
+        self.calorie_history_view.grid(column=0, row=0)
+        sb = ttk.Scrollbar(calorie_history_frame, orient=tk.VERTICAL)
+        sb.grid(column=1, row=0, sticky='ns')
+
+        self.calorie_history_view.config(yscrollcommand=sb.set)
+        sb.config(command=self.calorie_history_view.yview)
+
 
     # Grab the data from the Database and add it to the TreeView table.
     def populate_food_data(self, search= None):
@@ -235,11 +279,38 @@ class App(tk.Frame):
                                            tags=('odd'))
             index = index + 1
 
+    def populate_history(self, search = None):
+        self.calorie_history_view.delete(*self.calorie_history_view.get_children())
+
+        print(f"Search String {search}")
+
+        with self.history_db_con:
+            #print(self.favorite_radio_sel.get())
+            if search is None:
+                print("search is None")
+                history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History")
+            else:
+                #Search goes here
+                pass
+
+        self.calorie_history_view.tag_configure('odd', font=("default",12), background='light grey')
+        self.calorie_history_view.tag_configure('even', font=("default",12))
+
+        index =0
+        for item in history_data:
+            if index %2:
+                self.calorie_history_view.insert(parent='', index = item[0], values=(item[0], item[1], item[2], item[3]),
+                                           tags=('even'))
+            else:
+                self.calorie_history_view.insert(parent='', index = item[0], values=(item[0], item[1], item[2], item[3]),
+                                           tags=('odd'))
+            index = index + 1
 
     def update_clock(self):
-        now = time.strftime("%a %b %Y %H:%M:%S")
+        # now = time.strftime("%a %b %Y %H:%M:%S")
+        now = datetime.now().replace(microsecond=0)
         self.time_label.configure(text=now)
-        self.after(1000, self.update_clock)
+        self.after(800, self.update_clock)
 
     # Zero out the scale
     def zero(self):
@@ -329,10 +400,19 @@ class App(tk.Frame):
         time.sleep(0)
         self.populate_food_data()
 
+    def add_to_history(self):
+        now = datetime.now().replace(microsecond=0)
+        now.replace(second=0)
+        with self.history_db_con:
+            self.history_db_con.execute("INSERT INTO History (Date, KCALS, Weight) values(?, ?, ?)",
+                                        [now, 0, int(self.meal_total_calories)])
+        self.populate_history()
 
 root = tk.Tk()
 app=App(root)
 root.wm_title("Fatman Scale")
+
+
 
 root.attributes('-fullscreen', True)
 root.after(1000, app.update_clock)
