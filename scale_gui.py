@@ -73,7 +73,6 @@ class App(tk.Frame):
         # Create the Food Data Tree
         self.create_calorie_history_tree(self.calorie_history_frame)
 
-
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
 
@@ -400,13 +399,20 @@ class App(tk.Frame):
         time.sleep(0)
         self.populate_food_data()
 
+    # This adds to the history of meals
     def add_to_history(self):
         now = datetime.now().replace(microsecond=0)
         now.replace(second=0)
         with self.history_db_con:
             self.history_db_con.execute("INSERT INTO History (Date, KCALS, Weight) values(?, ?, ?)",
                                         [now, 0, int(self.meal_total_calories)])
+        # Update the history tree
         self.populate_history()
+
+        # Clear the meal tree and total calories as it is now part of history.
+        self.meal_tree_view.delete(*self.meal_tree_view.get_children())
+        self.meal_total_calories = 0
+        self.update_meal_calories()
 
 root = tk.Tk()
 app=App(root)
