@@ -2,8 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 import time
 import sqlite3 as sq
+import pathlib
 from PIL import Image, ImageTk
 
+# Current working directory
+cwd = pathlib.Path.cwd()
+
+mod_path = pathlib.Path(__file__).parent
+# print(mod_path)
 
 import HX711 as HX
 
@@ -48,7 +54,7 @@ class App(tk.Frame):
         root.columnconfigure(6, weight=1)
 
         # Connection to database of food.
-        self.db_con = sq.connect('food_data.db')
+        self.db_con = sq.connect(f'{mod_path}/food_data.db')
 
         self.time_label = tk.Label(text="", fg="Blue", font=("Helvetica", 18))
 
@@ -76,13 +82,13 @@ class App(tk.Frame):
                        text="All",
                        variable=self.favorite_radio_sel,
                        command=self.radio_sel,
-                       value=0)
+                       value=1)
 
         fave_radio = tk.Radiobutton(self.master,
                        text="Fav",
                        variable=self.favorite_radio_sel,
                        command=self.radio_sel,
-                       value=1)
+                       value=0)
 
         # Populate all the data from the Database of information
         self.populate_food_data()
@@ -201,8 +207,8 @@ class App(tk.Frame):
         print(f"Search String {search}")
 
         with self.db_con:
-            print(self.favorite_radio_sel.get())
-            if self.favorite_radio_sel.get() == 0:
+            #print(self.favorite_radio_sel.get())
+            if self.favorite_radio_sel.get() == 1:
                 if search is None:
                     print("search is None")
                     food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
@@ -301,14 +307,14 @@ class App(tk.Frame):
             self.update_meal_calories()
 
     def radio_sel(self):
-        print(str(self.favorite_radio_sel.get()))
+        # print(str(self.favorite_radio_sel.get()))
         self.populate_food_data()
 
     def toggle_favourite(self):
         selected = self.food_tree_view.selection()
 
         for sel_item in selected:
-            print(sel_item)
+            #print(sel_item)
             id = self.food_tree_view.item(selected[0])["values"][0]
 
             if self.food_tree_view.item(selected[0])["values"][3] == 0:
@@ -316,15 +322,11 @@ class App(tk.Frame):
             else:
                 Favourite = 0
 
-
-            print(id, self.food_tree_view.item(sel_item), Favourite)
-
-            # This doesn't seem to be working. 
+            # Update the selected item with the new favourite setting
             with self.db_con:
-                print(self.db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite , id]),
-                      Favourite, id)
+                self.db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite , id])
 
-        time.sleep(1)
+        time.sleep(0)
         self.populate_food_data()
 
 
