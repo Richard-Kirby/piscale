@@ -18,6 +18,38 @@ class App(tk.Frame):
         tk.Frame.__init__(self, master)
         self.master = master
 
+        # Connect to the scale and zero it out.
+        # create a SimpleHX711 object using GPIO pin 14 as the data pin,
+        # GPIO pin 15 as the clock pin, -370 as the reference unit, and
+        # -367471 as the offset
+        self.hx = HX.SimpleHX711(14, 15, int(-370 / 1.244), -367471)
+        self.hx.zero()
+
+        # Update the weight, which will happen regularly after this call.
+        self.weight_disp = tk.Label(text="", fg="Red", font=("Helvetica", 30))
+        self.update_weight()
+
+        # Notebook creation
+        notebook = ttk.Notebook(root)
+        notebook.pack(expand=True)
+
+        # create frames
+        daily_frame = ttk.Frame(notebook)
+        history_frame = ttk.Frame(notebook)
+
+        daily_frame.grid(column=0, row=0)
+        history_frame.grid(column=0, row=0)
+
+        # Variable that contains the search string in the search box.
+        self.favorite_radio_sel = tk.IntVar()
+
+        # Initialise total calories for today.
+        self.todays_calories=0
+
+        notebook.add(daily_frame, text='Daily')
+        notebook.add(history_frame, text='History')
+        notebook.grid(column=0, row=1, columnspan=4, pady=0)
+
         style = ttk.Style()
         print(style.theme_names())
         style.theme_use("alt")
@@ -30,151 +62,142 @@ class App(tk.Frame):
 
         # Resize image to fit on button
         # photoimage = photo.subsample(1, 2)
-
-        # Connect to the scale and zero it out.
-        # create a SimpleHX711 object using GPIO pin 14 as the data pin,
-        # GPIO pin 15 as the clock pin, -370 as the reference unit, and
-        # -367471 as the offset
-        self.hx = HX.SimpleHX711(14, 15, int(-370 / 1.244), -367471)
-        self.hx.zero()
-
-        # Update the weight, which will happen regularly after this call.
-        self.weight_disp = tk.Label(text="", fg="Red", font=("Helvetica", 30))
-        self.update_weight()
-
-        self.keyb_button = tk.Button(self.master, text="KeyB", command= self.keyb,font=("Helvetica",15), width=5)
-
-
-        # Configure the grid for all the widgets.
-        root.columnconfigure(0, weight=2)
-        root.columnconfigure(1, weight=2)
-        root.columnconfigure(2, weight=1)
-        root.columnconfigure(3, weight=2)
-        root.columnconfigure(4, weight=2)
-        root.columnconfigure(5, weight=2)
-        root.columnconfigure(6, weight=2)
+        self.master.bind('<Return>', self.search_food_data)
 
         # Connection to database of food.
         self.db_con = sq.connect(f'{mod_path}/food_data.db')
         self.history_db_con = sq.connect(f'{mod_path}/history.db')
-        self.keyb_sh_cmd = f'bash {mod_path}/keyb.sh'
-        print(self.keyb_sh_cmd)
+
+        # Widgets that are part of the main application
+        zero_btn = tk.Button(self.master, text="Zero", command=self.zero, font=("Helvetica", 15), width=5)
+        exit_btn = tk.Button(self.master, text="Exit", command=self.exit, font=("Helvetica", 15), width=5)
 
         self.time_label = tk.Label(text="", fg="Black", font=("Helvetica", 18))
+        self.weight_disp.grid(column=0, row=0, columnspan=1, sticky='e')
+        zero_btn.grid(column=1, row=0, sticky='e')
+        self.time_label.grid(column=2, row=0, sticky='e')
+        exit_btn.grid(column=3, row=0, sticky ='e')
 
-        self.zero_btn = tk.Button(self.master, text="Zero", command=self.zero, font=("Helvetica",15), width=5)
-        self.exit_btn = tk.Button(self.master, text="Exit", command=self.exit, font=("Helvetica",15), width=5)
-        self.add_to_meal_btn = tk.Button(self.master, text="->", command=self.add_to_meal, font=("Helvetica",15),
-                                         width=4)
+        self.create_daily_frame(daily_frame)
+        self.create_history_frame()
+
+    # Create the frame for the Daily tab in the notebook - this is used for normal interactions, like weighing food
+    def create_daily_frame(self, daily_frame):
+        # Configure the grid for all the widgets.
+        daily_frame.columnconfigure(0, weight=4)
+        daily_frame.columnconfigure(1, weight=1)
+        daily_frame.columnconfigure(2, weight=4)
+
+        food_data_frame = tk.Frame(daily_frame)
+        interaction_frame= tk.Frame(daily_frame)
+        meal_frame = tk.Frame(daily_frame)
+
+        # Create the right hand frame for dealing with the meals.
+        self.build_food_date_frame(food_data_frame)
+        self.build_interaction_frame(interaction_frame)
+        self.build_meal_frame(meal_frame)
+
+        # Populate all the data from the Database of Food Data
+        self.populate_food_data()
+
+        # Populate the daily history
+        self.populate_history()
+        food_data_frame.grid(column=0, row=0)
+        interaction_frame.grid(column=1, row=0, sticky='n')
+        meal_frame.grid(column=2, row=0)
+
+    # Build the food data frame, which contains the food data and the associated search mechanism.
+    def build_food_date_frame(self, food_data_frame):
 
         # Create the Food Data Tree
-        self.food_data_frame = tk.Frame(master)
-        self.create_food_data_tree(self.food_data_frame)
+        food_data_tree_frame=tk.Frame(food_data_frame)
+        self.create_food_data_tree(food_data_tree_frame)
 
-        self.meal_frame = tk.Frame(master)
+        # Button that opens an onscreen keyboard
+        keyb_button = tk.Button(food_data_frame, text="KeyB", command= self.keyb,font=("Helvetica",15), width=5)
+
+        # Search entry box
+        self.search_str = tk.StringVar()
+        search_box = ttk.Entry(
+            food_data_frame,
+            textvariable= self.search_str,
+            font=("Helvetica", 15)
+        )
+
+        search_box.grid(column=0, row=0, sticky='we')
+        keyb_button.grid(column=1, row=0, sticky='e')
+        food_data_tree_frame.grid(column=0, row=1, columnspan=2)
+
+
+    def build_interaction_frame(self, inter_frame):
+        add_to_meal_btn = tk.Button(inter_frame, text="->", command=self.add_to_meal, font=("Helvetica",15),
+                                         width=3)
+
+
+        toggle_favourite_btn = tk.Button(inter_frame,
+                                              #image=fave_image,
+                                              text='Fav',
+                                              command=self.toggle_favourite, font=("Helvetica",15), width=3)
+
+        # Button to Remove something from the meal.
+        remove_from_meal_btn = tk.Button(inter_frame, text="<-",
+                                         command=self.remove_from_meal,font=("Helvetica",15), width=3)
+
+        all_radio = tk.Radiobutton(inter_frame,
+                       text="All",
+                       variable=self.favorite_radio_sel,
+                       command=self.radio_sel,
+                       value=1, font=("Helvetica",12))
+
+        fave_radio = tk.Radiobutton(inter_frame,
+                       text="Fav",
+                       variable=self.favorite_radio_sel,
+                       command=self.radio_sel,
+                       value=0, font=("Helvetica",12))
+
+        toggle_favourite_btn.grid(column=0, row=0, sticky='nw')
+        fave_radio.grid(column=0, row=1, sticky='nw')
+        all_radio.grid(column=0, row=2, sticky='nw')
+        add_to_meal_btn.grid(column=0, row=4, sticky='nw')
+        remove_from_meal_btn.grid(column=0, row=5, sticky='nw')
+
+    def build_meal_frame(self, meal_frame):
+
         # Create the Food Data Tree
-        self.create_meal_tree(self.meal_frame)
+        meal_tree_frame= tk.Frame(meal_frame)
+        self.create_meal_tree(meal_tree_frame)
 
         # Today's calorie counts.
-        self.todays_calories_label = tk.Label(text="Today's kCal", font=("Helvetica", 15))
-        self.todays_calories_value_label = tk.Label(text="0", fg = "red", font=("Helvetica",15))
+        todays_calories_label = tk.Label(meal_frame, text="Today's kCal", font=("Helvetica", 15))
+        self.todays_calories_value_label = tk.Label(meal_frame, text="0", fg="red", font=("Helvetica", 15))
 
-
-        self.calorie_history_frame = tk.Frame(master)
+        calorie_history_frame = tk.Frame(meal_frame)
         # Create the Food Data Tree
-        self.create_calorie_history_tree(self.calorie_history_frame)
+        self.create_calorie_history_tree(calorie_history_frame)
 
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
 
-        self.meal_kcal_label = tk.Label(text="Meal kCal", font=("Helvetica", 15))
-        self.meal_kcal_display = tk.Label(text="0", fg="Red", font=("Helvetica", 15))
+        meal_kcal_label = tk.Label(meal_frame, text="Meal kCal", font=("Helvetica", 15))
+        self.meal_kcal_display = tk.Label(meal_frame, text="0", fg="Red", font=("Helvetica", 15))
 
-        self.favorite_radio_sel = tk.IntVar()
+        add_to_history_button = tk.Button(meal_frame,
+                                               # image=fave_image,
+                                               text='Add',
+                                               command=self.add_to_history, font=("Helvetica", 15), width=4)
 
-        all_radio = tk.Radiobutton(self.master,
-                       text="All",
-                       variable=self.favorite_radio_sel,
-                       command=self.radio_sel,
-                       value=1, font=("Helvetica",15))
+        meal_tree_frame.grid(column=0, row=0, columnspan=3)
+        add_to_history_button.grid(column=0, row=1, sticky='w')
+        calorie_history_frame.grid(column=0, row=2, columnspan=3)
 
-        fave_radio = tk.Radiobutton(self.master,
-                       text="Fav",
-                       variable=self.favorite_radio_sel,
-                       command=self.radio_sel,
-                       value=0, font=("Helvetica",15))
+        meal_kcal_label.grid(column=1, row=1)
+        self.meal_kcal_display.grid(column=2, row=1)
 
-        # Populate all the data from the Database of information
-        self.populate_food_data()
+        todays_calories_label.grid(column=0, row=3)
+        self.todays_calories_value_label.grid(column=1, row=3)
 
-        self.todays_calories=0
-        self.populate_history()
-
-        # Button to Remove something from the meal.
-        self.remove_from_meal_btn = tk.Button(self.master, text="<-",
-                                              command=self.remove_from_meal,font=("Helvetica",15), width=4)
-
-        # Buttons to toggle whether a food is a favourite or not, to enable filtering.
-        #fave_image = ImageTk.PhotoImage(Image.open('/home/kirbypi/piscale/images/star.jpg').resize((20,20)))
-
-        #fave_label=tk.Label(image=fave_image)
-
-        self.search_str = tk.StringVar()
-        self.search_box = ttk.Entry(
-            self.master,
-            textvariable= self.search_str,
-            font=("Helvetica", 15)
-        )
-        #self.search_button = tk.Button(self.master, text='Search', command=self.search_food_data, font=("Helvetica",15))
-        self.master.bind('<Return>', self.search_food_data)
-
-        # print("Entry is ", self.search_box.get())
-
-
-        self.toggle_favourite_btn = tk.Button(self.master,
-                                              #image=fave_image,
-                                              text='Fav',
-                                              command=self.toggle_favourite, font=("Helvetica",15), width=4)
-
-        self.add_to_history_button = tk.Button(self.master,
-                                              #image=fave_image,
-                                              text='Add',
-                                              command=self.add_to_history, font=("Helvetica",15), width=5)
-
-        # Widget placements
-        self.time_label.grid(column=3, row=0, columnspan=3, sticky='e')
-
-        self.exit_btn.grid(column=6, row=0, sticky ='e')
-
-        self.weight_disp.grid(column=1, row=0, columnspan=1, sticky='e')
-        self.zero_btn.grid(column=2, row=0, sticky='e')
-
-        self.keyb_button.grid(column=2, row=2, sticky='e')
-        self.search_box.grid(column=0, row=2, sticky='we', columnspan=2)
-        #self.search_button.grid(column=2, row=2, sticky='w')
-        #fave_label.grid(column=2, row=2)
-
-        self.food_data_frame.grid(column=0, row=3, columnspan=3, rowspan=21)
-
-        self.toggle_favourite_btn.grid(column=3, row=3)
-
-        fave_radio.grid(column=3, row=4, sticky='w')
-        all_radio.grid(column=3, row=5, sticky='w')
-
-        self.add_to_meal_btn.grid(column=3, row=7)
-        self.remove_from_meal_btn.grid(column=3, row=8)
-
-        self.meal_frame.grid(column=4, row=3, columnspan=3, rowspan=15)
-
-        self.add_to_history_button.grid(column=4, row=19)
-
-        self.calorie_history_frame.grid(column=4, row=20, columnspan=3, rowspan=4)
-
-        self.meal_kcal_display.grid(column=6, row=19)
-        self.meal_kcal_label.grid(column=5, row=19)
-
-        self.todays_calories_label.grid(column=5, row=26)
-        self.todays_calories_value_label.grid(column=6, row=26)
+    def create_history_frame(self):
+        pass
 
 
     # Creates the Food Data Tree for selecting food. Puts it into a frame.
@@ -188,7 +211,7 @@ class App(tk.Frame):
 
         # List of food and their characteristics.
         self.food_tree_view = ttk.Treeview(food_data_frame, columns=('db_id', 'FoodName', 'kCal', 'Fave'),
-                                           show='headings', height=18)
+                                           show='headings', height=16)
 
         self.food_tree_view["displaycolumns"]=('FoodName', 'kCal', 'Fave')
         self.food_tree_view.column('FoodName', anchor=tk.W, width=320)
@@ -228,7 +251,7 @@ class App(tk.Frame):
 
         # Create the meal TreeView, which tracks the meal
         self.meal_tree_view = ttk.Treeview(meal_frame, columns=('FoodName', 'Weight', 'kCal'),
-                                           show='headings', height=10)
+                                           show='headings', height=6)
         self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=100)
         self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=80)
         self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=80)
@@ -253,7 +276,7 @@ class App(tk.Frame):
 
         # Create the meal TreeView, which tracks the meal
         self.calorie_history_view = ttk.Treeview(calorie_history_frame, columns=('db_id','Date', 'Weight', 'kCal'),
-                                           show='headings', height=4)
+                                           show='headings', height=7)
 
         self.calorie_history_view["displaycolumns"] = ('Date', 'kCal')
 
