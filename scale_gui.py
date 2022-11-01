@@ -118,13 +118,13 @@ class App(tk.Frame):
 
         # Search entry box
         self.search_str = tk.StringVar()
-        search_box = ttk.Entry(
+        self.search_box = ttk.Entry(
             food_data_frame,
             textvariable= self.search_str,
             font=("Helvetica", 15)
         )
 
-        search_box.grid(column=0, row=0, sticky='we')
+        self.search_box.grid(column=0, row=0, sticky='we')
         keyb_button.grid(column=1, row=0, sticky='e')
         food_data_tree_frame.grid(column=0, row=1, columnspan=2)
 
@@ -155,9 +155,9 @@ class App(tk.Frame):
                        command=self.radio_sel,
                        value=0, font=("Helvetica",12))
 
-        toggle_favourite_btn.grid(column=0, row=0, sticky='nw')
-        fave_radio.grid(column=0, row=1, sticky='nw')
-        all_radio.grid(column=0, row=2, sticky='nw')
+        toggle_favourite_btn.grid(column=0, row=1, sticky='nw')
+        fave_radio.grid(column=0, row=2, sticky='nw')
+        all_radio.grid(column=0, row=3, sticky='nw')
         add_to_meal_btn.grid(column=0, row=4, sticky='nw')
         remove_from_meal_btn.grid(column=0, row=5, sticky='nw')
 
