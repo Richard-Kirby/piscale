@@ -133,7 +133,6 @@ class App(tk.Frame):
         add_to_meal_btn = tk.Button(inter_frame, text="->", command=self.add_to_meal, font=("Helvetica",15),
                                          width=3)
 
-
         toggle_favourite_btn = tk.Button(inter_frame,
                                               #image=fave_image,
                                               text='Fav',
@@ -155,6 +154,7 @@ class App(tk.Frame):
                        command=self.radio_sel,
                        value=0, font=("Helvetica",12))
 
+
         toggle_favourite_btn.grid(column=0, row=1, sticky='nw')
         fave_radio.grid(column=0, row=2, sticky='nw')
         all_radio.grid(column=0, row=3, sticky='nw')
@@ -166,6 +166,38 @@ class App(tk.Frame):
         # Create the Food Data Tree
         meal_tree_frame= tk.Frame(meal_frame)
         self.create_meal_tree(meal_tree_frame)
+
+        # Entry box Food Name for adhoc meal
+        self.adhoc_meal_name = tk.StringVar()
+        adhoc_meal_name_box = ttk.Entry(
+            meal_frame,
+            textvariable= self.adhoc_meal_name,
+            font=("Helvetica", 12), width = 12
+        )
+        adhoc_meal_name_box.grid(column=0, row=0)
+
+        # Entry box kCal for adhoc meal
+        self.adhoc_meal_kcal = tk.IntVar()
+        adhoc_meal_kcal_box = ttk.Entry(
+            meal_frame,
+            textvariable= self.adhoc_meal_kcal,
+            font=("Helvetica", 12), width = 6
+        )
+        adhoc_meal_kcal_box.grid(column=1, row=0)
+
+        adhoc_meal_btn = tk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, font=("Helvetica",14),width=3)
+        adhoc_meal_btn.grid(column= 2, row=0)
+
+
+        # Entry box Food Name for adhoc meal
+        self.adhoc_meal_name = tk.StringVar()
+        self.adhoc_meal_box = ttk.Entry(
+            meal_frame,
+            textvariable= self.adhoc_meal_name,
+            font=("Helvetica", 12), width = 12
+        )
+
+        self.adhoc_meal_box.grid(column=0, row=0)
 
         # Today's calorie counts.
         todays_calories_label = tk.Label(meal_frame, text="Today's kCal", font=("Helvetica", 15))
@@ -186,15 +218,16 @@ class App(tk.Frame):
                                                text='Add',
                                                command=self.add_to_history, font=("Helvetica", 15), width=4)
 
-        meal_tree_frame.grid(column=0, row=0, columnspan=3)
-        add_to_history_button.grid(column=0, row=1, sticky='w')
-        calorie_history_frame.grid(column=0, row=2, columnspan=3)
+        meal_tree_frame.grid(column=0, row=1, columnspan=3)
+        add_to_history_button.grid(column=0, row=2, sticky='w')
+        calorie_history_frame.grid(column=0, row=3, columnspan=3)
 
-        meal_kcal_label.grid(column=1, row=1)
-        self.meal_kcal_display.grid(column=2, row=1)
+        meal_kcal_label.grid(column=1, row=2)
+        self.meal_kcal_display.grid(column=2, row=2)
 
-        todays_calories_label.grid(column=0, row=3)
-        self.todays_calories_value_label.grid(column=1, row=3)
+        todays_calories_label.grid(column=0, row=4)
+        self.todays_calories_value_label.grid(column=1, row=4)
+
 
     def create_history_frame(self):
         pass
@@ -370,6 +403,7 @@ class App(tk.Frame):
             print(self.todays_calories)
 
         self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
+        self.after(30*60*60, self.populate_history)
 
 
     def update_clock(self):
@@ -385,6 +419,16 @@ class App(tk.Frame):
     # Exit function
     def exit(self):
         quit()
+
+    def adhoc_meal(self):
+        print("adhoc meal")
+
+        # Add the food item to the end of the meal list.
+        self.meal_tree_view.insert(parent='',index = tk.END,values=(self.adhoc_meal_name.get(),
+                                                                    0, self.adhoc_meal_kcal.get()))
+        self.meal_total_calories = self.meal_total_calories + self.adhoc_meal_kcal.get()
+        self.update_meal_calories()
+
 
     def update_weight(self):
         # Get the current weight on the scale
