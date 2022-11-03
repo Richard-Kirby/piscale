@@ -178,15 +178,15 @@ class App(tk.Frame):
 
         # Entry box kCal for adhoc meal
         self.adhoc_meal_kcal = tk.IntVar()
-        adhoc_meal_kcal_box = ttk.Entry(
+        self.adhoc_meal_kcal_box = ttk.Entry(
             meal_frame,
             textvariable= self.adhoc_meal_kcal,
             font=("Helvetica", 12), width = 6
         )
-        adhoc_meal_kcal_box.grid(column=1, row=0)
+        self.adhoc_meal_kcal_box.grid(column=1, row=0)
 
-        adhoc_meal_btn = tk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, font=("Helvetica",14),width=3)
-        adhoc_meal_btn.grid(column= 2, row=0)
+        self.adhoc_meal_btn = tk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, font=("Helvetica",14),width=3)
+        self.adhoc_meal_btn.grid(column= 2, row=0)
 
 
         # Entry box Food Name for adhoc meal
@@ -427,7 +427,10 @@ class App(tk.Frame):
         self.meal_tree_view.insert(parent='',index = tk.END,values=(self.adhoc_meal_name.get(),
                                                                     0, self.adhoc_meal_kcal.get()))
         self.meal_total_calories = self.meal_total_calories + self.adhoc_meal_kcal.get()
+        self.adhoc_meal_box.delete(0, tk.END)
+        self.adhoc_meal_kcal_box.delete(0, tk.END)
         self.update_meal_calories()
+
 
 
     def update_weight(self):
