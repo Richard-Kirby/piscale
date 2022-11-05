@@ -1,383 +1,150 @@
-start
-with
-True
-0.2 g
-True
-0.06 g
-True
-0.1 g
-True
-0.2 g
-True
-0.2 g
-True
-0.2 g
-True
-0.8 g
-True
-0.5 g
-True
-4.4 g
-True
-942.9 g
-True
-943.3 g
-True
-943.3 g
-True
-943.8 g
-True
-943.8 g
-True
-943.8 g
-True
-943.9 g
-True
-943.9 g
-True
-943.9 g
-True
-944.0 g
-True
-944.0 g
-True
-944.09 g
-True
-943.9 g
-True
-943.9 g
-True
-943.9 g
-True
-944.2 g
-True
-943.9 g
-True
-943.9 g
-True
-944.08 g
-True
-944.01 g
-True
-944.06 g
-True
-944.06 g
-True
-944.007 g
-True
-944.0 g
-True
-944.08 g
-True
-944.0 g
-True
-944.2 g
-True
-944.06 g
-True
-944.02 g
-True
-944.07 g
-True
-943.9 g
-True
-944.01 g
-True
-944.1 g
-True
-944.1 g
-True
-944.003 g
-True
-944.2 g
-True
-944.08 g
-True
-944.2 g
-True
-944.2 g
-True
-944.2 g
-True
-944.08 g
-True
-944.1 g
-True
-944.01 g
-True
-944.3 g
-True
-944.06 g
-True
-944.07 g
-True
-944.2 g
-True
-944.1 g
-True
-944.1 g
-True
-944.3 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.09 g
-True
-944.4 g
-True
-944.3 g
-True
-944.3 g
-True
-944.3 g
-True
-944.1 g
-True
-944.3 g
-True
-944.2 g
-True
-944.1 g
-True
-944.2 g
-True
-944.08 g
-True
-944.3 g
-True
-944.08 g
-True
-944.2 g
-True
-944.3 g
-True
-944.3 g
-True
-944.2 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.10 g
-True
-944.2 g
-True
-944.3 g
-True
-944.4 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.1 g
-True
-944.2 g
-True
-944.2 g
-True
-944.1 g
-True
-944.2 g
-True
-944.2 g
-True
-944.1 g
-True
-944.2 g
-True
-944.3 g
-True
-944.3 g
-True
-944.4 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.3 g
-True
-944.3 g
-True
-944.3 g
-True
-944.1 g
-True
-944.1 g
-True
-944.05 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.4 g
-True
-944.2 g
-True
-944.4 g
-True
-944.3 g
-True
-944.1 g
-True
-944.4 g
-True
-944.2 g
-True
-944.2 g
-True
-944.2 g
-True
-944.2 g
-True
-944.2 g
-True
-944.3 g
-True
-944.4 g
-True
-944.5 g
-True
-944.4 g
-True
-944.4 g
-True
-944.3 g
-True
-944.3 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
-944.4 g
-True
-944.2 g
-True
-944.3 g
-True
-944.3 g
-True
-944.4 g
-True
-944.3 g
-True
-944.3 g
-True
-944.3 g
-True
-944.4 g
-True
-944.5 g
-True
-944.2 g
-True
-944.4 g
-True
-944.3 g
-True
-944.4 g
-True
-944.3 g
-True
-944.3 g
-True
-944.2 g
-True
-944.3 g
-True
-944.4 g
-True
-944.5 g
-True
-944.3 g
-True
-944.3 g
-True
-944.2 g
-True
-944.2 g
-True
-944.4 g
-True
-944.2 g
-True
-944.2 g
-True
-944.4 g
-True
-944.3 g
-True
-944.4 g
-True
-944.3 g
-True
-944.4 g
-True
-944.3 g
-True
-944.3 g
-True
-944.5 g
-True
-944.2 g
-True
-944.5 g
-True
-944.4 g
-True
-944.3 g
-True
-944.5 g
-True
-944.2 g
-True
-944.1 g
-True
-944.3 g
-True
-944.4 g
-True
-944.5 g
-True
-944.5 g
-True
-944.2 g
-True
-944.3 g
-True
-944.2 g
-True
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from . import _api, _version, cbook, _docstring, rcsetup
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/rcsetup.py", line 27, in <module>
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from matplotlib.colors import Colormap, is_color_like
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/colors.py", line 56, in <module>
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from matplotlib import _api, _cm, cbook, scale
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/scale.py", line 22, in <module>
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from matplotlib.ticker import (
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/ticker.py", line 138, in <module>
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from matplotlib import transforms as mtransforms
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/transforms.py", line 49, in <module>
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]:     from matplotlib._path import (
+Nov  5 17:30:31 KirbyPiZeroW6 bash[4603]: ImportError: numpy.core.multiarray failed to import
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Main process exited, code=exited, status=1/FAILURE
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Failed with result 'exit-code'.
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5356 (onboard) remains running after unit stopped.
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5362 (dbus-launch) remains running after unit stopped.
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5363 (dbus-daemon) remains running after unit stopped.
+Nov  5 17:30:31 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.161s CPU time.
+Nov  5 17:30:35 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:30:35 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:30:35 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:30:40 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:30:40 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:30:40 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: piscale.service: Scheduled restart job, restart counter is at 22.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: Stopped Start PiScale.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.198s CPU time.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5356 (onboard) in control group while starting unit. Ignoring.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5362 (dbus-launch) in control group while starting unit. Ignoring.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5363 (dbus-daemon) in control group while starting unit. Ignoring.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:41 KirbyPiZeroW6 systemd[1]: Started Start PiScale.
+Nov  5 17:30:41 KirbyPiZeroW6 bash[4614]: localuser:root being added to access control list
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]: RuntimeError: module compiled against API version 0x10 but this version of numpy is 0xd
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]: Traceback (most recent call last):
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/home/kirbypi/piscale/scale_gui.py", line 14, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     import history
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/home/kirbypi/piscale/history.py", line 10, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     import matplotlib
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/__init__.py", line 113, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from . import _api, _version, cbook, _docstring, rcsetup
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/rcsetup.py", line 27, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from matplotlib.colors import Colormap, is_color_like
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/colors.py", line 56, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from matplotlib import _api, _cm, cbook, scale
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/scale.py", line 22, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from matplotlib.ticker import (
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/ticker.py", line 138, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from matplotlib import transforms as mtransforms
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/transforms.py", line 49, in <module>
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]:     from matplotlib._path import (
+Nov  5 17:30:42 KirbyPiZeroW6 bash[4615]: ImportError: numpy.core.multiarray failed to import
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Main process exited, code=exited, status=1/FAILURE
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Failed with result 'exit-code'.
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5356 (onboard) remains running after unit stopped.
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5362 (dbus-launch) remains running after unit stopped.
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5363 (dbus-daemon) remains running after unit stopped.
+Nov  5 17:30:43 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.231s CPU time.
+Nov  5 17:30:45 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:30:45 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:30:45 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:30:50 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:30:50 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:30:50 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: piscale.service: Scheduled restart job, restart counter is at 23.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: Stopped Start PiScale.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.231s CPU time.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5356 (onboard) in control group while starting unit. Ignoring.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5362 (dbus-launch) in control group while starting unit. Ignoring.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5363 (dbus-daemon) in control group while starting unit. Ignoring.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:30:53 KirbyPiZeroW6 systemd[1]: Started Start PiScale.
+Nov  5 17:30:53 KirbyPiZeroW6 bash[4620]: localuser:root being added to access control list
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]: RuntimeError: module compiled against API version 0x10 but this version of numpy is 0xd
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]: Traceback (most recent call last):
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/home/kirbypi/piscale/scale_gui.py", line 14, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     import history
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/home/kirbypi/piscale/history.py", line 10, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     import matplotlib
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/__init__.py", line 113, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from . import _api, _version, cbook, _docstring, rcsetup
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/rcsetup.py", line 27, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from matplotlib.colors import Colormap, is_color_like
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/colors.py", line 56, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from matplotlib import _api, _cm, cbook, scale
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/scale.py", line 22, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from matplotlib.ticker import (
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/ticker.py", line 138, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from matplotlib import transforms as mtransforms
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/transforms.py", line 49, in <module>
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]:     from matplotlib._path import (
+Nov  5 17:30:54 KirbyPiZeroW6 bash[4621]: ImportError: numpy.core.multiarray failed to import
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Main process exited, code=exited, status=1/FAILURE
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Failed with result 'exit-code'.
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5356 (onboard) remains running after unit stopped.
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5362 (dbus-launch) remains running after unit stopped.
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5363 (dbus-daemon) remains running after unit stopped.
+Nov  5 17:30:54 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.180s CPU time.
+Nov  5 17:30:55 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:30:55 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:30:55 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:31:00 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:31:00 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:31:00 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: piscale.service: Scheduled restart job, restart counter is at 24.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: Stopped Start PiScale.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.197s CPU time.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5356 (onboard) in control group while starting unit. Ignoring.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5362 (dbus-launch) in control group while starting unit. Ignoring.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: piscale.service: Found left-over process 5363 (dbus-daemon) in control group while starting unit. Ignoring.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: This usually indicates unclean termination of a previous run, or service implementation deficiencies.
+Nov  5 17:31:04 KirbyPiZeroW6 systemd[1]: Started Start PiScale.
+Nov  5 17:31:04 KirbyPiZeroW6 bash[4628]: localuser:root being added to access control list
+Nov  5 17:31:05 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:31:05 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:31:05 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]: RuntimeError: module compiled against API version 0x10 but this version of numpy is 0xd
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]: Traceback (most recent call last):
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/home/kirbypi/piscale/scale_gui.py", line 14, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     import history
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/home/kirbypi/piscale/history.py", line 10, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     import matplotlib
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/__init__.py", line 113, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from . import _api, _version, cbook, _docstring, rcsetup
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/rcsetup.py", line 27, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from matplotlib.colors import Colormap, is_color_like
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/colors.py", line 56, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from matplotlib import _api, _cm, cbook, scale
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/scale.py", line 22, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from matplotlib.ticker import (
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/ticker.py", line 138, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from matplotlib import transforms as mtransforms
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:   File "/usr/local/lib/python3.9/dist-packages/matplotlib/transforms.py", line 49, in <module>
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]:     from matplotlib._path import (
+Nov  5 17:31:05 KirbyPiZeroW6 bash[4629]: ImportError: numpy.core.multiarray failed to import
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Main process exited, code=exited, status=1/FAILURE
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Failed with result 'exit-code'.
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5356 (onboard) remains running after unit stopped.
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5362 (dbus-launch) remains running after unit stopped.
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Unit process 5363 (dbus-daemon) remains running after unit stopped.
+Nov  5 17:31:05 KirbyPiZeroW6 systemd[1]: piscale.service: Consumed 1.193s CPU time.
+Nov  5 17:31:10 KirbyPiZeroW6 brltty[860]: /lib/brltty/libbrlttyxa2.so: cannot open shared object file: No such file or directory
+Nov  5 17:31:10 KirbyPiZeroW6 brltty[860]: cannot load screen driver: /lib/brltty/libbrlttyxa2.so
+Nov  5 17:31:10 KirbyPiZeroW6 brltty[860]: screen driver not loadable: a2

@@ -6,7 +6,63 @@ import sqlite3 as sq
 import pathlib
 from PIL import Image, ImageTk
 
+# importing the required module
+import matplotlib
+import matplotlib.pyplot as plt
+
 mod_path = pathlib.Path(__file__).parent
+
+
+# Need to use this if no interactive window.
+matplotlib.use('Agg')
+
+
+class CalorieHistoryPlotter:
+    def __init__(self, max_plot_points):
+        matplotlib.pyplot.rcParams["savefig.format"] = 'jpg'
+        self.max_plot_points = max_plot_points
+        self.label_increment = 1
+
+    def plot_save(self, calorie_history, maintain, slow_loss, fast_loss, file_name):
+
+        # print("plotting")
+        x_data = []
+        y_data = []
+
+        # Build X/Y data
+        for key in calorie_history:
+            x_data.append(key)
+            y_data.append(int(calorie_history[key]))
+
+        # Trim to the max history
+        x_data = x_data[-self.max_plot_points:]
+        y_data = y_data[-self.max_plot_points:]
+
+        # Set up the plot
+        fig, ax = plt.subplots(figsize=(6.25, 4))
+
+        # Bar Plot
+
+        plt.axhline(y=maintain, linewidth=1, color='r')
+        plt.axhline(y=slow_loss, linewidth=1, color='y')
+        plt.axhline(y=fast_loss, linewidth=1, color='g')
+
+        bar_graph = ax.bar(x_data, y_data)
+        ax.bar_label(bar_graph)
+
+        # rotate and align the tick labels so they look better
+        fig.autofmt_xdate()
+
+        # naming the x axis
+        matplotlib.pyplot.xlabel('Date')
+        # naming the y axis
+        matplotlib.pyplot.ylabel('Calorie History')
+
+        # giving a title to my graph
+        matplotlib.pyplot.title('Calorie History')
+
+        matplotlib.pyplot.savefig(file_name)
+
 
 # Class to create the Calorie History
 class CalorieHistoryFrame(tk.Frame):
@@ -73,7 +129,7 @@ class CalorieHistoryFrame(tk.Frame):
         for item in history_data:
             print(item[1][:10], item[3])
 
-            key = item[1][:10]
+            key = item[1][5:10]
             if key in calorie_history.keys():
                 calorie_history[key] = calorie_history[key] + item[3]
             else:
@@ -82,6 +138,9 @@ class CalorieHistoryFrame(tk.Frame):
         for key in calorie_history:
             print("Totals:", key, calorie_history[key])
 
+        # Plot the last 2 weeks
+        calorie_plotter = CalorieHistoryPlotter(14)
+        calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("default",12), background='light grey')
         self.history_tree.tag_configure('even', font=("default",12))
@@ -127,7 +186,9 @@ class HistoryFrame():
 
         #history_label.grid(column=0, row=0)
         #history_label.grid(column=0, row=0)
-        img = ImageTk.PhotoImage(Image.open('star.jpg'))
+
+
+        img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
         label = tk.Label(self.graph_frame, image=img)
         label.image = img
         label.grid(column=0, row=0)
