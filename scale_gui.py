@@ -7,12 +7,17 @@ import pathlib
 from PIL import Image, ImageTk
 import subprocess
 
+# HX711 library for the scale interface.
+import HX711 as HX
+
+# Import the history frame classes
+import history
+
 #import daily_frame
 
 mod_path = pathlib.Path(__file__).parent
 # print(mod_path)
 
-import HX711 as HX
 
 class App(tk.Frame):
     def __init__(self, master=None):
@@ -36,8 +41,8 @@ class App(tk.Frame):
         notebook.pack(expand=True)
 
         # create frames
-        daily_frame = ttk.Frame(notebook)
-        history_frame = ttk.Frame(notebook)
+        daily_frame = tk.Frame(notebook)
+        history_frame = tk.Frame(notebook)
 
         daily_frame.grid(column=0, row=0)
         history_frame.grid(column=0, row=0)
@@ -69,6 +74,36 @@ class App(tk.Frame):
         # Connection to database of food.
         self.db_con = sq.connect(f'{mod_path}/food_data.db')
         self.history_db_con = sq.connect(f'{mod_path}/history.db')
+        self.meal_history_db_con = sq.connect(f'{mod_path}/meal_history.db')
+
+        # Create the Meal History DB tables if not already created.
+        with self.meal_history_db_con:
+
+            # create cursor object
+            cur = self.meal_history_db_con.cursor()
+
+            list_of_tables = cur.execute(
+                """SELECT name FROM sqlite_master WHERE type='table'
+                AND name='MealHistory'; """).fetchall()
+
+            print(list_of_tables)
+
+            if list_of_tables == []:
+                print("Table not found")
+                print("Creating Meal History")
+
+                # Create the table as it wasn't found.
+                self.meal_history_db_con.execute(""" CREATE TABLE MealHistory(
+                        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        Date TEXT,
+                        FoodName TEXT,
+                        PROT FLOAT,
+                        FAT FLOAT,
+                        CHO FLOAT,
+                        KCALS FLOAT,
+                        WEIGHT FLOAT
+                        );
+                    """)
 
         # Widgets that are part of the main application
         zero_btn = tk.Button(self.master, text="Zero", command=self.zero, font=("Helvetica", 15), width=5)
@@ -81,7 +116,7 @@ class App(tk.Frame):
         exit_btn.grid(column=3, row=0, sticky ='e')
 
         self.create_daily_frame(daily_frame)
-        self.create_history_frame()
+        self.history_frame_hdl= history.HistoryFrame(history_frame)
 
     # Create the frame for the Daily tab in the notebook - this is used for normal interactions, like weighing food
     def create_daily_frame(self, daily_frame):
@@ -156,13 +191,14 @@ class App(tk.Frame):
                        command=self.radio_sel,
                        value=0, font=("Helvetica",12))
 
-
         toggle_favourite_btn.grid(column=0, row=1, sticky='nw')
         fave_radio.grid(column=0, row=2, sticky='nw')
         all_radio.grid(column=0, row=3, sticky='nw')
         add_to_meal_btn.grid(column=0, row=4, sticky='nw')
         remove_from_meal_btn.grid(column=0, row=5, sticky='nw')
 
+    # Meal Frame includes the meal frame, which has all the components of meals, the history frame that
+    # has the history, which shows today's meals and total calories for the day.
     def build_meal_frame(self, meal_frame):
 
         # Create the Food Data Tree
@@ -206,7 +242,8 @@ class App(tk.Frame):
         self.todays_calories_value_label = tk.Label(meal_frame, text="0", fg="red", font=("Helvetica", 15))
 
         calorie_history_frame = tk.Frame(meal_frame)
-        # Create the Food Data Tree
+
+        # Create the Calorie History Tree
         self.create_calorie_history_tree(calorie_history_frame)
 
         # Intialise the mawl to 0 caories.
@@ -215,6 +252,7 @@ class App(tk.Frame):
         meal_kcal_label = tk.Label(meal_frame, text="Meal kCal", font=("Helvetica", 15))
         self.meal_kcal_display = tk.Label(meal_frame, text="0", fg="Red", font=("Helvetica", 15))
 
+        # This button moves a meal to history.
         add_to_history_button = tk.Button(meal_frame,
                                                # image=fave_image,
                                                text='Add',
@@ -229,10 +267,6 @@ class App(tk.Frame):
 
         todays_calories_label.grid(column=0, row=4)
         self.todays_calories_value_label.grid(column=1, row=4)
-
-
-    def create_history_frame(self):
-        pass
 
 
     # Creates the Food Data Tree for selecting food. Puts it into a frame.
@@ -275,7 +309,6 @@ class App(tk.Frame):
         self.search_box.focus_set()
         #os.system(self.keyb_sh_cmd)
         subprocess.Popen('onboard')
-
 
     # Creates the meal Tree for showing the meal. Puts it into a frame.
     def create_meal_tree(self, meal_frame):
@@ -407,12 +440,12 @@ class App(tk.Frame):
         self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
         self.after(60*60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
 
-
+    # Update the clock
     def update_clock(self):
         # now = time.strftime("%a %b %Y %H:%M:%S")
         now = datetime.now().replace(microsecond=0)
         self.time_label.configure(text=now)
-        self.after(800, self.update_clock)
+        self.after(500, self.update_clock)
 
     # Zero out the scale
     def zero(self):
@@ -422,6 +455,7 @@ class App(tk.Frame):
     def exit(self):
         quit()
 
+    # Adds adhoc meal e.g. snack or something ate out. Takes a name and associated calories.
     def adhoc_meal(self):
         print("adhoc meal")
 
@@ -433,8 +467,7 @@ class App(tk.Frame):
         self.adhoc_meal_kcal_box.delete(0, tk.END)
         self.update_meal_calories()
 
-
-
+    # Update the weight display - do this regular.
     def update_weight(self):
         # Get the current weight on the scale
         weight_str = str(self.hx.weight(5))
@@ -492,10 +525,12 @@ class App(tk.Frame):
             self.meal_total_calories = self.meal_total_calories - calories
             self.update_meal_calories()
 
+    # Reacts to a change in the radio button selections (Favorite or All)
     def radio_sel(self):
         # print(str(self.favorite_radio_sel.get()))
         self.populate_food_data()
 
+    # Marks or un-marks a food as a favourite.
     def toggle_favourite(self):
         selected = self.food_tree_view.selection()
 
@@ -520,7 +555,6 @@ class App(tk.Frame):
         now = datetime.now().replace(microsecond=0)
         now.replace(second=0)
 
-
         if self.meal_total_calories != 0:
             with self.history_db_con:
                 self.history_db_con.execute("INSERT INTO History (Date, KCALS, Weight) values(?, ?, ?)",
@@ -532,6 +566,7 @@ class App(tk.Frame):
         self.meal_tree_view.delete(*self.meal_tree_view.get_children())
         self.meal_total_calories = 0
         self.update_meal_calories()
+
 
 root = tk.Tk()
 app=App(root)
