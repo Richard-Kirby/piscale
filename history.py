@@ -41,7 +41,7 @@ class CalorieHistoryFrame(tk.Frame):
 
         self.history_tree.column('Date', anchor=tk.CENTER, width=100)
         # self.history_tree.column('Weight', anchor=tk.CENTER, width=80)
-        self.history_tree.column('kCal', anchor=tk.CENTER, width=50)
+        self.history_tree.column('kCal', anchor=tk.E, width=50)
 
         self.history_tree.heading('Date', text="Date")
         self.history_tree.heading('kCal', text="kCal")
@@ -127,7 +127,12 @@ class HistoryFrame():
 
         #history_label.grid(column=0, row=0)
         #history_label.grid(column=0, row=0)
+        img = ImageTk.PhotoImage(Image.open('star.jpg'))
+        label = tk.Label(self.graph_frame, image=img)
+        label.image = img
+        label.grid(column=0, row=0)
+
         self.calorie_history_frame.grid(column=0, row=0)
-        self.graph_frame.grid(column=1, row=1)
+        self.graph_frame.grid(column=1, row=0)
 
 

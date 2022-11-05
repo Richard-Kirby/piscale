@@ -350,7 +350,7 @@ class App(tk.Frame):
 
         self.calorie_history_view.column('Date', anchor=tk.CENTER, width=180)
         # self.calorie_history_view.column('Weight', anchor=tk.CENTER, width=80)
-        self.calorie_history_view.column('kCal', anchor=tk.CENTER, width=80)
+        self.calorie_history_view.column('kCal', anchor=tk.E, width=80)
 
         self.calorie_history_view.heading('Date', text="Date")
         self.calorie_history_view.heading('kCal', text="kCal")
