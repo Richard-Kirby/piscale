@@ -7,6 +7,8 @@ import pathlib
 from PIL import Image, ImageTk
 import subprocess
 
+#import daily_frame
+
 mod_path = pathlib.Path(__file__).parent
 # print(mod_path)
 
@@ -128,7 +130,7 @@ class App(tk.Frame):
         keyb_button.grid(column=1, row=0, sticky='e')
         food_data_tree_frame.grid(column=0, row=1, columnspan=2)
 
-
+    # Provides the various buttons that sits between the two main frames, food data and meal frames.
     def build_interaction_frame(self, inter_frame):
         add_to_meal_btn = tk.Button(inter_frame, text="->", command=self.add_to_meal, font=("Helvetica",15),
                                          width=3)
@@ -403,7 +405,7 @@ class App(tk.Frame):
             print(self.todays_calories)
 
         self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(30*60*60, self.populate_history)
+        self.after(60*60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
 
 
     def update_clock(self):
@@ -435,7 +437,7 @@ class App(tk.Frame):
 
     def update_weight(self):
         # Get the current weight on the scale
-        weight_str = str(self.hx.weight(10))
+        weight_str = str(self.hx.weight(5))
         # print(weight_str)
         self.weight = float(weight_str[:-2])
 
@@ -446,7 +448,7 @@ class App(tk.Frame):
 
         #print(weight)
         self.weight_disp.configure(text = weight_display)
-        self.after(1000, self.update_weight)
+        self.after(300, self.update_weight)
 
     def update_meal_calories(self):
         self.meal_kcal_display.configure(text = (f"{self.meal_total_calories:.0f} kCal"))
