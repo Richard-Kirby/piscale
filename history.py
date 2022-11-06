@@ -12,11 +12,12 @@ import matplotlib.pyplot as plt
 
 mod_path = pathlib.Path(__file__).parent
 
-
 # Need to use this if no interactive window.
 matplotlib.use('Agg')
 
 
+# Plots the Calorie history bar chart along with the 3 lines showing the maintain, slow weight loss, and fast weight
+# loss targets.
 class CalorieHistoryPlotter:
     def __init__(self, max_plot_points):
         matplotlib.pyplot.rcParams["savefig.format"] = 'jpg'
@@ -62,6 +63,24 @@ class CalorieHistoryPlotter:
         matplotlib.pyplot.title('Calorie History')
 
         matplotlib.pyplot.savefig(file_name)
+
+
+# Class to manage the updating of the history graph.
+class HistoryGrapher(tk.Frame):
+    def __init__(self, frame):
+        tk.Frame.__init__(self, frame)
+        img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
+        self.graph_label = tk.Label(frame, image=img)
+        self.graph_label.image = img
+        self.graph_label.grid(column=0, row=0)
+        #self.update_graph()
+
+    # Update the graph as it changes over time.
+    def update_graph(self):
+        img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
+        self.graph_label.configure(image=img)
+        self.graph_label.image = img
+        self.after(60*1000, self.update_graph) # Update after 10 minutes
 
 
 # Class to create the Calorie History
@@ -139,6 +158,7 @@ class CalorieHistoryFrame(tk.Frame):
             print("Totals:", key, calorie_history[key])
 
         # Plot the last 2 weeks
+        print("updating graph")
         calorie_plotter = CalorieHistoryPlotter(14)
         calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
@@ -161,7 +181,8 @@ class CalorieHistoryFrame(tk.Frame):
             #print(self.todays_calories)
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(20*60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
+        self.after(60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
+
 
 # Class to manaage the history frame of the Application.
 class HistoryFrame():
@@ -187,11 +208,9 @@ class HistoryFrame():
         #history_label.grid(column=0, row=0)
         #history_label.grid(column=0, row=0)
 
-
-        img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
-        label = tk.Label(self.graph_frame, image=img)
-        label.image = img
-        label.grid(column=0, row=0)
+        history_grapher = HistoryGrapher(self.graph_frame)
+        time.sleep(15)
+        history_grapher.update_graph()
 
         self.calorie_history_frame.grid(column=0, row=0)
         self.graph_frame.grid(column=1, row=0)
