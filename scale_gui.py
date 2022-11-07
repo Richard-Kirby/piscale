@@ -53,16 +53,16 @@ class App(tk.Frame):
         # Initialise total calories for today.
         self.todays_calories=0
 
-        notebook.add(daily_frame, text='Daily')
-        notebook.add(history_frame, text='History')
-        notebook.grid(column=0, row=1, columnspan=4, pady=0)
-
         style = ttk.Style()
         print(style.theme_names())
         style.theme_use("alt")
         style.configure('Treeview', rowheight=20)
         style.map("Treeview")
 
+        style.configure('TNotebook.Tab', font=('Helvetica', '14'))
+        notebook.add(daily_frame, text='Daily')
+        notebook.add(history_frame, text='History')
+        notebook.grid(column=0, row=1, columnspan=4, pady=0)
 
         # Create a photoimage object of the image in the path
         #fave_img = PhotoImage(file="</home/pi/images/fave.png>")
@@ -139,9 +139,9 @@ class App(tk.Frame):
 
         # Populate the daily history
         self.populate_history()
-        food_data_frame.grid(column=0, row=0)
-        interaction_frame.grid(column=1, row=0, sticky='n')
-        meal_frame.grid(column=2, row=0)
+        food_data_frame.grid(column=0, row=0, sticky='n')
+        interaction_frame.grid(column=1, row=0, pady=30, sticky='n')
+        meal_frame.grid(column=2, row=0, sticky ='n')
 
     # Build the food data frame, which contains the food data and the associated search mechanism.
     def build_food_date_frame(self, food_data_frame):
@@ -150,8 +150,11 @@ class App(tk.Frame):
         food_data_tree_frame=tk.Frame(food_data_frame)
         self.create_food_data_tree(food_data_tree_frame)
 
+        # Keyboard icon preparation
+        kb_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/keyboard.png').resize((32, 32)))
         # Button that opens an onscreen keyboard
-        keyb_button = tk.Button(food_data_frame, text="KeyB", command= self.keyb,font=("Helvetica",15), width=5)
+        keyb_button = tk.Button(food_data_frame, image=kb_image, command= self.keyb,font=("Helvetica",15), width=60)
+        keyb_button.image = kb_image
 
         # Search entry box
         self.search_str = tk.StringVar()
@@ -167,35 +170,63 @@ class App(tk.Frame):
 
     # Provides the various buttons that sits between the two main frames, food data and meal frames.
     def build_interaction_frame(self, inter_frame):
-        add_to_meal_btn = tk.Button(inter_frame, text="->", command=self.add_to_meal, font=("Helvetica",15),
-                                         width=3)
 
-        toggle_favourite_btn = tk.Button(inter_frame,
-                                              #image=fave_image,
-                                              text='Fav',
-                                              command=self.toggle_favourite, font=("Helvetica",15), width=3)
 
-        # Button to Remove something from the meal.
-        remove_from_meal_btn = tk.Button(inter_frame, text="<-",
-                                         command=self.remove_from_meal,font=("Helvetica",15), width=3)
-
-        all_radio = tk.Radiobutton(inter_frame,
-                       text="All",
-                       variable=self.favorite_radio_sel,
-                       command=self.radio_sel,
-                       value=1, font=("Helvetica",12))
+        small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
         fave_radio = tk.Radiobutton(inter_frame,
-                       text="Fav",
+                                    image=small_fave_image,
+                                    variable=self.favorite_radio_sel,
+                                    command=self.radio_sel,
+                                    value=0, font=("Helvetica", 12))
+
+        fave_radio.image = small_fave_image
+
+        all_image = ImageTk.PhotoImage(Image.open
+                                       (f'{mod_path}/images/6541614_logo_overflow_stack_stackoverflow_icon.png')
+                                       .resize((32, 32)))
+
+
+        all_radio = tk.Radiobutton(inter_frame,
+                       image = all_image,
                        variable=self.favorite_radio_sel,
                        command=self.radio_sel,
-                       value=0, font=("Helvetica",12))
+                       value=1)
 
-        toggle_favourite_btn.grid(column=0, row=1, sticky='nw')
-        fave_radio.grid(column=0, row=2, sticky='nw')
-        all_radio.grid(column=0, row=3, sticky='nw')
-        add_to_meal_btn.grid(column=0, row=4, sticky='nw')
-        remove_from_meal_btn.grid(column=0, row=5, sticky='nw')
+        all_radio.image= all_image
+
+
+        add_to_meal_image = ImageTk.PhotoImage(Image.open(
+            f'{mod_path}/images/8665198_circle_arrow_right_icon.png').resize((32, 32)))
+
+        add_to_meal_btn = tk.Button(inter_frame, image=add_to_meal_image, command=self.add_to_meal,
+                                         width=60)
+
+        add_to_meal_btn.image = add_to_meal_image
+
+        remove_from_meal_image = ImageTk.PhotoImage(Image.open(
+            f'{mod_path}/images/8665200_circle_arrow_left_icon.png').resize((32, 32)))
+
+        # Button to Remove something from the meal.
+        remove_from_meal_btn = tk.Button(inter_frame, image = remove_from_meal_image,
+                                         command=self.remove_from_meal, width=60)
+
+        # Favorite Toggle Icon and Button
+        remove_from_meal_btn.image = remove_from_meal_image
+
+
+        fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((48, 48)))
+
+        toggle_favourite_btn = tk.Button(inter_frame, image=fave_image, #text='Fav',
+                                         command=self.toggle_favourite, font=("Helvetica",15), width=40)
+        toggle_favourite_btn.image = fave_image
+
+
+        fave_radio.grid(column=0, row=0, sticky='nw')
+        all_radio.grid(column=0, row=1, sticky='nw')
+        add_to_meal_btn.grid(column=0, row=2, sticky='nw', pady =5)
+        remove_from_meal_btn.grid(column=0, row=3, sticky='nw')
+        toggle_favourite_btn.grid(column=0, row=4, sticky='sew', pady=60)
 
     # Meal Frame includes the meal frame, which has all the components of meals, the history frame that
     # has the history, which shows today's meals and total calories for the day.
@@ -226,7 +257,6 @@ class App(tk.Frame):
         self.adhoc_meal_btn = tk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, font=("Helvetica",14),width=3)
         self.adhoc_meal_btn.grid(column= 2, row=0)
 
-
         # Entry box Food Name for adhoc meal
         self.adhoc_meal_name = tk.StringVar()
         self.adhoc_meal_box = ttk.Entry(
@@ -252,14 +282,18 @@ class App(tk.Frame):
         meal_kcal_label = tk.Label(meal_frame, text="Meal kCal", font=("Helvetica", 15))
         self.meal_kcal_display = tk.Label(meal_frame, text="0", fg="Red", font=("Helvetica", 15))
 
+        add_to_history_image = ImageTk.PhotoImage(Image.open
+                                                  (f'{mod_path}/images/8665197_circle_arrow_down_icon.png')
+                                                  .resize((32, 32)))
+
         # This button moves a meal to history.
-        add_to_history_button = tk.Button(meal_frame,
-                                               # image=fave_image,
-                                               text='Add',
-                                               command=self.add_to_history, font=("Helvetica", 15), width=4)
+        add_to_history_button = tk.Button(meal_frame,image=add_to_history_image,
+                                          command=self.add_to_history, width=40)
+
+        add_to_history_button.image = add_to_history_image
 
         meal_tree_frame.grid(column=0, row=1, columnspan=3)
-        add_to_history_button.grid(column=0, row=2, sticky='w')
+        add_to_history_button.grid(column=0, row=2, sticky='e')
         calorie_history_frame.grid(column=0, row=3, columnspan=3)
 
         meal_kcal_label.grid(column=1, row=2)
@@ -384,19 +418,40 @@ class App(tk.Frame):
                 food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData"
                                                 " WHERE Favourite=1")
 
-        self.food_tree_view.tag_configure('odd', font=("default",12), background='light grey')
+        self.food_tree_view.tag_configure('odd', font=("Helvetica",12), background='light grey')
         self.food_tree_view.tag_configure('even', font=("default",12))
+        self.food_tree_view.tag_configure('odd_fave', font=("default",12), foreground = 'red', background='light grey')
+        self.food_tree_view.tag_configure('even_fave', font=("default",12), foreground = 'red')
+
+        # TODO: Can't get images to work with the tree view.
+        small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
         index =0
         for food in food_data:
-            # print(food)
-            if index %2:
-                self.food_tree_view.insert(parent='', index = food[0], values=(food[0], food[2], food[3], food[4]),
+            print(food[3])
+            if food[4] == 1:
+                if index %2:
+                    self.food_tree_view.insert(parent='',  image = small_fave_image, index = food[0],
+                                           values=(food[0], food[2], food[3], food[4]),
+                                           tags=('even_fave'))
+                else:
+                    self.food_tree_view.insert(parent='',  image = small_fave_image, index = food[0],
+                                           values=(food[0], food[2], food[3], food[4]),
+                                           tags=('odd_fave'))
+
+
+            elif index %2:
+                self.food_tree_view.insert(parent='',  image = small_fave_image, index = food[0],
+                                           values=(food[0], food[2], food[3], food[4]),
                                            tags=('even'))
+                self.food_tree_view.image = small_fave_image
             else:
-                self.food_tree_view.insert(parent='', index = food[0], values=(food[0], food[2], food[3], food[4]),
+                self.food_tree_view.insert(parent='', index = food[0],
+                                           values=(food[0], food[2], food[3], food[4]),
                                            tags=('odd'))
             index = index + 1
+
+        self.food_tree_view.image= small_fave_image
 
     # Populate the history Tree View. search_date is used to get the information for that date.
     def populate_history(self):

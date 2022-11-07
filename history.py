@@ -80,7 +80,7 @@ class HistoryGrapher(tk.Frame):
         img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
         self.graph_label.configure(image=img)
         self.graph_label.image = img
-        self.after(60*1000, self.update_graph) # Update after 10 minutes
+        self.after(60*1000*13, self.update_graph) # Update after 10 minutes
 
 
 # Class to create the Calorie History
@@ -181,7 +181,7 @@ class CalorieHistoryFrame(tk.Frame):
             #print(self.todays_calories)
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
+        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
