@@ -10,3 +10,5 @@ After this step, I was still getting the problem below.
 ImportError: numpy.core.multiarray failed to import 
 
 I therefore upgraded numpy = "pip3 install -U numpy" and "sudo apt-get install libatlas-base-dev" to resolve that problem. Troubleshooting information was available, here: https://numpy.org/doc/stable/user/troubleshooting-importerror.htm
+
+piscale service enables running piscale as a service via systemd. It will need to be modified to use your own username and loaded as per other services. 
