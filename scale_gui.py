@@ -7,6 +7,8 @@ import pathlib
 from PIL import Image, ImageTk
 import subprocess
 
+import cProfile
+
 # HX711 library for the scale interface.
 import HX711 as HX
 
@@ -54,7 +56,7 @@ class App(tk.Frame):
         self.todays_calories=0
 
         style = ttk.Style()
-        print(style.theme_names())
+        #print(style.theme_names())
         style.theme_use("alt")
         style.configure('Treeview', rowheight=20)
         style.map("Treeview")
@@ -86,11 +88,11 @@ class App(tk.Frame):
                 """SELECT name FROM sqlite_master WHERE type='table'
                 AND name='MealHistory'; """).fetchall()
 
-            print(list_of_tables)
+            # print(list_of_tables)
 
             if list_of_tables == []:
-                print("Table not found")
-                print("Creating Meal History")
+                #print("Table not found")
+                #print("Creating Meal History")
 
                 # Create the table as it wasn't found.
                 self.meal_history_db_con.execute(""" CREATE TABLE MealHistory(
@@ -334,12 +336,12 @@ class App(tk.Frame):
     # Search the database based on the entry.
     def search_food_data(self, event):
         search_str = self.search_str.get()
-        print(search_str, event)
+        # print(search_str, event)
         self.populate_food_data(search=search_str)
 
     # Bring onscreen keyboard up.
     def keyb(self):
-        print("keyboard function")
+        #print("keyboard function")
         self.search_box.focus_set()
         #os.system(self.keyb_sh_cmd)
         subprocess.Popen('onboard')
@@ -401,17 +403,17 @@ class App(tk.Frame):
     def populate_food_data(self, search= None):
         self.food_tree_view.delete(*self.food_tree_view.get_children())
 
-        print(f"Search String {search}")
+        #print(f"Search String {search}")
 
         with self.db_con:
             #print(self.favorite_radio_sel.get())
             if self.favorite_radio_sel.get() == 1:
                 if search is None:
-                    print("search is None")
+                    #print("search is None")
                     food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
                 else:
                     search = f"%{search}%"
-                    print(f"Search String 2 {search}")
+                    #print(f"Search String 2 {search}")
                     food_data = self.db_con.execute(
                         "SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData WHERE FoodName LIKE ?",(search,))
             else:
@@ -428,7 +430,7 @@ class App(tk.Frame):
 
         index =0
         for food in food_data:
-            print(food[3])
+            #print(food[3])
             if food[4] == 1:
                 if index %2:
                     self.food_tree_view.insert(parent='',  image = small_fave_image, index = food[0],
@@ -460,18 +462,18 @@ class App(tk.Frame):
         today = str(datetime.now())[:10]
 
         search_date = f"%{today}%"
-        print(search_date)
+        #print(search_date)
 
-        print(f"Search String {search_date}")
+        #print(f"Search String {search_date}")
 
         with self.history_db_con:
             #print(self.favorite_radio_sel.get())
             if search_date is None:
-                print("search is None")
+                #print("search is None")
                 history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History")
             else:
                 #Search for today's calories
-                print(f"Search String {search_date}")
+                #print(f"Search String {search_date}")
                 history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History"
                     " WHERE Date LIKE ?",(search_date,))
 
@@ -490,7 +492,7 @@ class App(tk.Frame):
             index = index + 1
 
             self.todays_calories = self.todays_calories + int(item[3])
-            print(self.todays_calories)
+            #print(self.todays_calories)
 
         self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
         self.after(60*60*1000, self.populate_history) # Update once an hour - to ensure the day change gets included
@@ -512,7 +514,7 @@ class App(tk.Frame):
 
     # Adds adhoc meal e.g. snack or something ate out. Takes a name and associated calories.
     def adhoc_meal(self):
-        print("adhoc meal")
+        #print("adhoc meal")
 
         # Add the food item to the end of the meal list.
         self.meal_tree_view.insert(parent='',index = tk.END,values=(self.adhoc_meal_name.get(),
@@ -536,7 +538,7 @@ class App(tk.Frame):
 
         #print(weight)
         self.weight_disp.configure(text = weight_display)
-        self.after(300, self.update_weight)
+        self.after(1000, self.update_weight)
 
     def update_meal_calories(self):
         self.meal_kcal_display.configure(text = (f"{self.meal_total_calories:.0f} kCal"))
@@ -545,11 +547,11 @@ class App(tk.Frame):
     def add_to_meal(self):
         selected = self.food_tree_view.selection()
         chosenfood = self.food_tree_view.item(selected[0])
-        print(chosenfood)
+        #print(chosenfood)
         id, food_name, calories_per_100, fave = chosenfood["values"]
-        print(self.weight)
+        #print(self.weight)
         food_weight = self.weight
-        print(food_name, calories_per_100)
+        #print(food_name, calories_per_100)
         food_calories = float(calories_per_100) * self.weight/100
         if food_calories < 0:
             food_calories = 0
@@ -564,16 +566,16 @@ class App(tk.Frame):
 
     # Remove an item from the meal
     def remove_from_meal(self):
-        print("remove from meal")
+        #print("remove from meal")
         selected = self.meal_tree_view.selection()
-        print("*", selected)
+        #print("*", selected)
 
         if len(selected) > 0:
             remove_food = (self.meal_tree_view.item(selected[0]))
-            print(remove_food)
+            #print(remove_food)
             remove_food_name, weight, calories = remove_food["values"]
 
-            print(remove_food_name, weight, calories)
+            #print(remove_food_name, weight, calories)
 
             # Remove the food item to the end of the meal list.
             self.meal_tree_view.delete(selected[0])
@@ -602,7 +604,6 @@ class App(tk.Frame):
             with self.db_con:
                 self.db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite , id])
 
-        time.sleep(0)
         self.populate_food_data()
 
     # This adds to the history of meals
@@ -630,5 +631,5 @@ root.wm_title("Fatman Scale")
 
 
 root.attributes('-fullscreen', True)
-root.after(1000, app.update_clock)
+app.update_clock()
 root.mainloop()

@@ -80,7 +80,7 @@ class HistoryGrapher(tk.Frame):
         img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
         self.graph_label.configure(image=img)
         self.graph_label.image = img
-        self.after(60*1000*13, self.update_graph) # Update after 10 minutes
+        self.after(60*1000*1, self.update_graph) # Update after 13 minutes
 
 
 # Class to create the Calorie History
@@ -98,7 +98,9 @@ class CalorieHistoryFrame(tk.Frame):
         history_tree_frame = tk.Frame(self.frame)
         self.create_calorie_history_tree(history_tree_frame)
         history_tree_frame.grid(column=0, row=0)
+        self.last_calorie_history = None
 
+    # Create the tree view object.
     def create_calorie_history_tree(self, history_tree_frame):
 
         #temp_label = tk.Label(history_tree_frame, text="Temp", fg="Black", font=("Helvetica", 15))
@@ -134,11 +136,11 @@ class CalorieHistoryFrame(tk.Frame):
 
         with self.history_db_con:
             if search_date is None:
-                print("search is None")
+                #print("search is None")
                 history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History")
             else:
                 #Search for today's calories
-                print(f"Search String {search_date}")
+                #print(f"Search String {search_date}")
                 history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History"
                     " WHERE Date LIKE ?",(search_date,))
 
@@ -146,7 +148,7 @@ class CalorieHistoryFrame(tk.Frame):
         calorie_history = {}
 
         for item in history_data:
-            print(item[1][:10], item[3])
+            #print(item[1][:10], item[3])
 
             key = item[1][5:10]
             if key in calorie_history.keys():
@@ -154,13 +156,15 @@ class CalorieHistoryFrame(tk.Frame):
             else:
                 calorie_history[key] = item[3]
 
-        for key in calorie_history:
-            print("Totals:", key, calorie_history[key])
+        #for key in calorie_history:
+            #print("Totals:", key, calorie_history[key])
+        #    pass
 
         # Plot the last 2 weeks
-        print("updating graph")
-        calorie_plotter = CalorieHistoryPlotter(14)
-        calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
+        if self.last_calorie_history == None or self.last_calorie_history != calorie_history:
+            #print("updating graph")
+            calorie_plotter = CalorieHistoryPlotter(14)
+            calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("default",12), background='light grey')
         self.history_tree.tag_configure('even', font=("default",12))
@@ -178,10 +182,12 @@ class CalorieHistoryFrame(tk.Frame):
             index = index + 1
 
             #self.todays_calories = self.todays_calories + int(item[3])
-            #print(self.todays_calories)
+            ##print(self.todays_calories)
+
+        self.last_calorie_history = calorie_history
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
+        self.after(60*1000*1, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
@@ -209,7 +215,6 @@ class HistoryFrame():
         #history_label.grid(column=0, row=0)
 
         history_grapher = HistoryGrapher(self.graph_frame)
-        time.sleep(15)
         history_grapher.update_graph()
 
         self.calorie_history_frame.grid(column=0, row=0)
