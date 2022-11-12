@@ -31,7 +31,7 @@ class App(tk.Frame):
         # create a SimpleHX711 object using GPIO pin 14 as the data pin,
         # GPIO pin 15 as the clock pin, -370 as the reference unit, and
         # -367471 as the offset
-        self.hx = HX.SimpleHX711(14, 15, int(-370 / 1.244), -367471)
+        self.hx = HX.SimpleHX711(14, 15, int(-370 / 1.244/1.00314), -367471)
         self.hx.zero()
 
         # Update the weight, which will happen regularly after this call.
