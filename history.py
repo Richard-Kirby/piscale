@@ -116,7 +116,7 @@ class CalorieHistoryFrame(tk.Frame):
 
         self.history_tree["displaycolumns"] = ('Date', 'kCal')
 
-        self.history_tree.column('Date', anchor=tk.CENTER, width=100)
+        self.history_tree.column('Date', anchor=tk.W, width=110)
         # self.history_tree.column('Weight', anchor=tk.CENTER, width=80)
         self.history_tree.column('kCal', anchor=tk.E, width=50)
 
@@ -148,13 +148,15 @@ class CalorieHistoryFrame(tk.Frame):
         calorie_history = {}
 
         for item in history_data:
-            #print(item[1][:10], item[3])
+            # print(item[1][:10], item[3])
+            # print(item[1][:10])
+            day_date = datetime.strptime(item[1][:10],"%Y-%m-%d" ).strftime('%a %d %b')
+            #print(day_date)
 
-            key = item[1][5:10]
-            if key in calorie_history.keys():
-                calorie_history[key] = calorie_history[key] + item[3]
+            if day_date in calorie_history.keys():
+                calorie_history[day_date] = calorie_history[day_date] + item[3]
             else:
-                calorie_history[key] = item[3]
+                calorie_history[day_date] = item[3]
 
         #for key in calorie_history:
             #print("Totals:", key, calorie_history[key])
@@ -166,8 +168,8 @@ class CalorieHistoryFrame(tk.Frame):
             calorie_plotter = CalorieHistoryPlotter(14)
             calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
-        self.history_tree.tag_configure('odd', font=("default",12), background='light grey')
-        self.history_tree.tag_configure('even', font=("default",12))
+        self.history_tree.tag_configure('odd', font=("fixedsys",12), background='light grey')
+        self.history_tree.tag_configure('even', font=("fixedsys",12))
 
         index =0
         self.todays_calories = 0
