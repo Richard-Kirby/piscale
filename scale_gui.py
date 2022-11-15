@@ -166,13 +166,19 @@ class App(tk.Frame):
             font=("Helvetica", 15)
         )
 
+        # Calculates and displays the calorie content of the selected itme given the weight.
+        self.selected_item_cal_label = tk.Label(food_data_frame, text="Selected", font=("Helvetica", 11))
+
+        #Call to the update calories for the selected item. Should update once in a while after that.
+        self.update_item_calories()
+
         self.search_box.grid(column=0, row=0, sticky='we')
         keyb_button.grid(column=1, row=0, sticky='e')
         food_data_tree_frame.grid(column=0, row=1, columnspan=2)
+        self.selected_item_cal_label.grid(column=0, row=2, columnspan=2)
 
     # Provides the various buttons that sits between the two main frames, food data and meal frames.
     def build_interaction_frame(self, inter_frame):
-
 
         small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
@@ -542,6 +548,22 @@ class App(tk.Frame):
 
     def update_meal_calories(self):
         self.meal_kcal_display.configure(text = (f"{self.meal_total_calories:.0f} kCal"))
+
+    #update the string of the selected item
+    def update_item_calories(self):
+        selected = self.food_tree_view.selection()
+        # print(selected)
+        if len(selected)!= 0:
+            chosenfood = self.food_tree_view.item(selected[0])
+            #print(chosenfood)
+            id, food_name, calories_per_100, fave = chosenfood["values"]
+            #print(self.weight)
+            food_calories = float(calories_per_100) * self.weight/100
+            if food_calories < 0:
+                food_calories = 0
+            # print(f"{food_name} {food_calories}kCal")
+            self.selected_item_cal_label.configure(text=f"{food_name[:60]} {food_calories:.0f} kCal")
+        self.after(2*1000, self.update_item_calories)
 
     # Add an item to the meal calculating total meal calories.
     def add_to_meal(self):
