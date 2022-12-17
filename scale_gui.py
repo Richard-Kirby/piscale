@@ -15,11 +15,11 @@ import HX711 as HX
 # Import the history frame classes
 import history
 
-#import daily_frame
+# Import the Body Weight classes
+import body_weight
 
 mod_path = pathlib.Path(__file__).parent
 # print(mod_path)
-
 
 class App(tk.Frame):
     def __init__(self, master=None):
@@ -45,6 +45,7 @@ class App(tk.Frame):
         # create frames
         daily_frame = tk.Frame(notebook)
         history_frame = tk.Frame(notebook)
+        body_weight_frame = tk.Frame(notebook)
 
         daily_frame.grid(column=0, row=0)
         history_frame.grid(column=0, row=0)
@@ -64,6 +65,7 @@ class App(tk.Frame):
         style.configure('TNotebook.Tab', font=('Helvetica', '14'))
         notebook.add(daily_frame, text='Daily')
         notebook.add(history_frame, text='History')
+        notebook.add(body_weight_frame, text='Weight')
         notebook.grid(column=0, row=1, columnspan=4, pady=0)
 
         # Create a photoimage object of the image in the path
@@ -119,6 +121,7 @@ class App(tk.Frame):
 
         self.create_daily_frame(daily_frame)
         self.history_frame_hdl= history.HistoryFrame(history_frame)
+        self.body_weight_frame_hdl = body_weight.BodyWeightFrame(body_weight_frame)
 
     # Create the frame for the Daily tab in the notebook - this is used for normal interactions, like weighing food
     def create_daily_frame(self, daily_frame):
