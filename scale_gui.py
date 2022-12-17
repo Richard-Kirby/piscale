@@ -208,7 +208,7 @@ class App(tk.Frame):
             f'{mod_path}/images/8665198_circle_arrow_right_icon.png').resize((32, 32)))
 
         add_to_meal_btn = tk.Button(inter_frame, image=add_to_meal_image, command=self.add_to_meal,
-                                         width=60)
+                                         width=50)
 
         add_to_meal_btn.image = add_to_meal_image
 
@@ -217,24 +217,23 @@ class App(tk.Frame):
 
         # Button to Remove something from the meal.
         remove_from_meal_btn = tk.Button(inter_frame, image = remove_from_meal_image,
-                                         command=self.remove_from_meal, width=60)
+                                         command=self.remove_from_meal, width=50)
 
-        # Favorite Toggle Icon and Button
         remove_from_meal_btn.image = remove_from_meal_image
 
-
+        # Favorite Toggle Icon and Button
         fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((48, 48)))
 
         toggle_favourite_btn = tk.Button(inter_frame, image=fave_image, #text='Fav',
-                                         command=self.toggle_favourite, font=("Helvetica",15), width=40)
+                                         command=self.toggle_favourite, font=("Helvetica",15), width=50)
         toggle_favourite_btn.image = fave_image
 
 
         fave_radio.grid(column=0, row=0, sticky='nw')
         all_radio.grid(column=0, row=1, sticky='nw')
-        add_to_meal_btn.grid(column=0, row=2, sticky='nw', pady =5)
-        remove_from_meal_btn.grid(column=0, row=3, sticky='nw')
-        toggle_favourite_btn.grid(column=0, row=4, sticky='sew', pady=60)
+        add_to_meal_btn.grid(column=0, row=2, sticky='ne', pady =5)
+        remove_from_meal_btn.grid(column=0, row=3, sticky='ne')
+        toggle_favourite_btn.grid(column=0, row=4, sticky='se', pady=60)
 
     # Meal Frame includes the meal frame, which has all the components of meals, the history frame that
     # has the history, which shows today's meals and total calories for the day.

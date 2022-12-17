@@ -1,28 +1,98 @@
 import socket
+import threading
+import sqlite3 as sql
+import pathlib
 from datetime import datetime, timedelta
 
-UDP_IP = "255.255.255.255"
-UDP_PORT = 6000
+mod_path = pathlib.Path(__file__).parent
 
-sock = socket.socket(socket.AF_INET, # Internet
-                     socket.SOCK_DGRAM) # UDP
-sock.bind((UDP_IP, UDP_PORT))
+# Class to manage the interface ot the Bathroom scale. Receives UDP messages, throwing out duplicates and adds them
+# to a database which can then be queried.
+class BathroomScaleIF(threading.Thread):
+    def __init__(self, udp_ip_port):
+        threading.Thread.__init__(self)
 
-last_msg_received_time = None
-while True:
-    data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-    now = datetime.now()
-    result = str(data).split(',')
-    weight = float(result[1][:-1].strip())
+        self.sock = socket.socket(socket.AF_INET, # Internet
+                             socket.SOCK_DGRAM) # UDP
+        self.sock.bind(udp_ip_port)
 
-    if last_msg_received_time == None:
-        last_msg_received_time = now
-        print(f"received message:{now}, {data}, {result}, {weight}")
-    else:
-        time_diff = now-last_msg_received_time
-        #print(time_diff)
+        # Connect to the DB.
+        self.body_weight_db = sql.connect(f'{mod_path}/body_weight_history.db', check_same_thread=False)
 
-        if time_diff > timedelta(minutes=1):
-            print("new measurement")
-            last_msg_received_time = now
-            print(f"received message:{now}, {data}, {result}, {weight}")
+        # Create the Meal History DB tables if not already created.
+        with self.body_weight_db:
+
+            # create cursor object - this part is to create the initial table if it doesn't exist yet.
+            cur = self.body_weight_db.cursor()
+
+            list_of_tables = cur.execute(
+                """SELECT name FROM sqlite_master WHERE type='table'
+                AND name='BodyWeightHistory'; """).fetchall()
+
+            # print(list_of_tables)
+
+            if list_of_tables == []:
+                print("Table not found, creating Body Weight History")
+
+                # Create the table as it wasn't found.
+                self.body_weight_db.execute(""" CREATE TABLE BodyWeightHistory(
+                        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        Date TEXT,
+                        User TEXT,
+                        Weight FLOAT
+                        );
+                    """)
+
+            else: # just prints out the database. Not important.
+                body_weight_history = self.body_weight_db.execute("SELECT id, Date, User,Weight FROM BodyWeightHistory")
+                print(body_weight_history)
+                print("here")
+                for item in body_weight_history:
+                    print(item)
+
+    # Thread's run function receives data and processes the received body weights by adding them to the DB.
+    def run(self):
+        last_msg_received_time = None
+        print("run")
+
+        # Receive UDP messages from the scale, throw away duplicates.
+        while True:
+            data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
+
+            # Get time of the message, strip out surrounding junk and compare to other
+            # messages to throw out duplicates.
+            now = datetime.now()
+            result = str(data).split(',')
+            weight = float(result[1][:-1].strip())
+
+            if last_msg_received_time is None:
+                last_msg_received_time = now
+                print(f"received message:{now}, {data}, {result}, {weight}")
+                with self.body_weight_db:
+
+                    # Add to body weight history
+                    self.body_weight_db.execute("INSERT INTO BodyWeightHistory (Date, User, Weight) values(?, ?, ?)"
+                                                , [now, "Richard", weight])
+
+            # Ensure the message is actually a new measurement - Scale sends multiple messages to ensure the measurement
+            # is received.
+            else:
+                time_diff = now-last_msg_received_time
+
+                if time_diff > timedelta(minutes=1):
+                    print("new measurement")
+                    last_msg_received_time = now
+                    print(f"received message:{now}, {data}, {result}, {weight}")
+
+                    with self.body_weight_db:
+
+                        # Add to body weight history
+                        self.body_weight_db.execute("INSERT INTO BodyWeightHistory (Date, User, Weight) values(?, ?, ?)"
+                             ,[now, "Richard", weight])
+
+if __name__ == '__main__':
+
+    bath_if = BathroomScaleIF(("255.255.255.255", 6000))
+
+    bath_if.start()
+
