@@ -43,13 +43,6 @@ class BathroomScaleIF(threading.Thread):
                         );
                     """)
 
-            else: # just prints out the database. Not important.
-                body_weight_history = self.body_weight_db.execute("SELECT id, Date, User,Weight FROM BodyWeightHistory")
-                print(body_weight_history)
-                print("here")
-                for item in body_weight_history:
-                    print(item)
-
     # Thread's run function receives data and processes the received body weights by adding them to the DB.
     def run(self):
         last_msg_received_time = None
@@ -90,9 +83,28 @@ class BathroomScaleIF(threading.Thread):
                         self.body_weight_db.execute("INSERT INTO BodyWeightHistory (Date, User, Weight) values(?, ?, ?)"
                              ,[now, "Richard", weight])
 
+    # Provide database records to the caller. num_records of 0 will return all records.
+    def return_records(self, num_records =0 ):
+        body_weight_history = self.body_weight_db.execute("SELECT id, Date, User,Weight FROM BodyWeightHistory")
+
+        ret_list = []
+
+        for item in body_weight_history:
+            print(item)
+            ret_list.append(item)
+
+        if num_records ==0:
+            return ret_list
+        else:
+            return ret_list[:-num_records]
+
+
 if __name__ == '__main__':
 
     bath_if = BathroomScaleIF(("255.255.255.255", 6000))
 
     bath_if.start()
+
+    body_weight_history = bath_if.return_records(num_records=2)
+    print(body_weight_history)
 
