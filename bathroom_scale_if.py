@@ -98,6 +98,12 @@ class BathroomScaleIF(threading.Thread):
         else:
             return ret_list[:-num_records]
 
+    # Deletes the record entry in the database according to ID
+    def delete_entry(self, db_id):
+        self.body_weight_db.execute("DELETE FROM BodyWeightHistory WHERE id = ?", (db_id,))
+        print(f"Deleted {db_id}")
+        self.body_weight_db.commit()
+
 
 if __name__ == '__main__':
 

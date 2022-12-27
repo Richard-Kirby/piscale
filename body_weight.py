@@ -62,6 +62,11 @@ class WeightHistoryPlotter:
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
 
+        ymax = round(start_weight+10, -1)
+        ymin = round(target_weight -30, -1)
+
+        matplotlib.pyplot.ylim ([ymin,ymax])
+
         matplotlib.pyplot.savefig(file_name)
 
 
@@ -90,18 +95,32 @@ class WeightHistoryFrame(tk.Frame):
 
         self.frame = frame
 
-        #temp_label = tk.Label(self.frame, text="Temp", fg="Black", font=("Helvetica", 15))
-        #temp_label.grid(column=0, row=0)
-
         # Create the Food Data Tree
         history_tree_frame = tk.Frame(self.frame)
         self.create_weight_history_tree(history_tree_frame)
         history_tree_frame.grid(column=0, row=0)
         self.last_weight_history = None
 
+        delete_btn = tk.Button(self.master, text="Del", command=self.del_entry, font=("Helvetica", 15), width=5)
+        delete_btn.grid(column=0, row=1)
+
         self.bathroom_scale_if = bathroom_scale_if.BathroomScaleIF(bathroom_scale_if_ip_port)
         self.bathroom_scale_if.daemon = True
         self.bathroom_scale_if.start()
+
+    def del_entry(self):
+        print("delete")
+        selected = self.history_tree.selection()
+        # print(selected)
+        if len(selected) != 0:
+            chosen_entry = self.history_tree.item(selected[0])
+            print(chosen_entry)
+            db_id, date, user, weight = chosen_entry["values"]
+            # print(self.weight)
+            print(db_id, date, user, weight)
+
+            # Delete the selected item from the database
+            self.bathroom_scale_if.delete_entry(db_id)
 
     # Create the tree view object.
     def create_weight_history_tree(self, history_tree_frame):
@@ -115,7 +134,7 @@ class WeightHistoryFrame(tk.Frame):
 
         # Create the meal TreeView, which tracks the meal
         self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id','Date', 'User', 'Weight'),
-                                           show='headings', height=18)
+                                           show='headings', height=16)
 
         self.history_tree["displaycolumns"] = ('Date', 'Weight')
 
@@ -156,10 +175,10 @@ class WeightHistoryFrame(tk.Frame):
 
         for record in weight_history:
             if index %2:
-                self.history_tree.insert(parent='', index=index, values=(0, record[1], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
                                          tags=('even'))
             else:
-                self.history_tree.insert(parent='', index=index, values=(0, record[1], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
                                          tags=('odd'))
             index = index + 1
 
