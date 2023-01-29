@@ -127,6 +127,8 @@ class App(tk.Frame):
 
         # Create the Google Fit If Object, which connects to Google Fit to get calories expended data.
         google_fit_if_obj = google_fit_if.GoogleFitIf(sys.argv)
+        google_fit_if_obj.daemon = True
+        google_fit_if_obj.start()
 
         # Create the calorie history and body weight frames.
 

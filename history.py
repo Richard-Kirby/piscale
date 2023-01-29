@@ -27,57 +27,55 @@ class CalorieHistoryPlotter:
 
     def plot_save(self, calorie_history, maintain, slow_loss, fast_loss, file_name):
 
-        data = []
-        # Build X/Y data
-        for key in calorie_history:
-            record = [calorie_history[key]['date'], key, calorie_history[key]['calories consumed'],
-                        calorie_history[key]['calories expended']]
-            #print(record)
-            data.append(record)
-        data.sort()
-
         #print(data[0])
 
         # Trim to the max history
-        data = data[-self.max_plot_points:]
+        calorie_history = calorie_history[-self.max_plot_points:]
 
         x_data=[]
         y_consumed_data=[]
         y_expended_data=[]
 
-        for i in range(len(data)):
-            x_data.append(data[i][1])
-            y_consumed_data.append(data[i][2])
-            y_expended_data.append(data[i][3])
+        for i in range(len(calorie_history)):
+            x_data.append(calorie_history[i][1])
+            y_consumed_data.append(calorie_history[i][2])
+            y_expended_data.append(round(calorie_history[i][3]))
 
-        print(x_data, y_consumed_data)
+        #print(x_data, y_consumed_data)
 
         # Set up the plot
         fig, ax = plt.subplots(figsize=(6.25, 4))
 
         # Bar Plot
 
-        plt.axhline(y=maintain, linewidth=1, color='r')
-        plt.axhline(y=slow_loss, linewidth=1, color='y')
-        plt.axhline(y=fast_loss, linewidth=1, color='g')
+        #plt.axhline(y=maintain, linewidth=1, color='r')
+        #plt.axhline(y=slow_loss, linewidth=1, color='y')
+        #plt.axhline(y=fast_loss, linewidth=1, color='g')
 
         #ax.plot(x_data, y_data)
         width = 0.35
 
         x = numpy.arange(len(x_data))  # the label locations
+        #print(x)
 
-        bar_graph1 = ax.bar(x_data, y_consumed_data, width, label='Consumed')
-        bar_graph2 = ax.bar(x_data, y_expended_data, width, label='Expended')
-        ax.bar_label(bar_graph1)
-        ax.bar_label(bar_graph2)
+        bar_graph1 = ax.bar(x - width/2, y_consumed_data, width, label='Consumed')
+        bar_graph2 = ax.bar(x + width/2, y_expended_data, width, label='Expended')
+        ax.bar_label(bar_graph1, rotation='vertical', padding = 3)
+        ax.bar_label(bar_graph2, rotation='vertical', padding = 3)
+
+        ax.legend(loc='lower left')
+        ax.set_xticks(x, x_data)
 
         # rotate and align the tick labels so they look better
         fig.autofmt_xdate()
+        fig.tight_layout()
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
+
         # naming the y axis
-        matplotlib.pyplot.ylabel('Calorie History')
+        matplotlib.pyplot.ylabel('Calorie History',)
+        matplotlib.pyplot.ylim(0, 2800)
 
         # giving a title to my graph
         matplotlib.pyplot.title('Calorie History')
@@ -138,19 +136,22 @@ class CalorieHistoryFrame(tk.Frame):
         history_tree_frame.columnconfigure(0, weight=4)
         history_tree_frame.columnconfigure(1, weight=1)
         history_tree_frame.columnconfigure(2, weight=1)
+        history_tree_frame.columnconfigure(3, weight=1)
 
         # Create the meal TreeView, which tracks the meal
-        self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id','Date', 'Weight', 'kCal'),
+        self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id','Date', 'Weight', 'kCal In', 'kCal Out'),
                                            show='headings', height=18)
 
-        self.history_tree["displaycolumns"] = ('Date', 'kCal')
+        self.history_tree["displaycolumns"] = ('Date', 'kCal In', 'kCal Out')
 
-        self.history_tree.column('Date', anchor=tk.W, width=110)
+        self.history_tree.column('Date', anchor=tk.W, width=80)
         # self.history_tree.column('Weight', anchor=tk.CENTER, width=80)
-        self.history_tree.column('kCal', anchor=tk.E, width=50)
+        self.history_tree.column('kCal In', anchor=tk.E, width=40)
+        self.history_tree.column('kCal Out', anchor=tk.E, width=40)
 
         self.history_tree.heading('Date', text="Date")
-        self.history_tree.heading('kCal', text="kCal")
+        self.history_tree.heading('kCal In', text="kCal In")
+        self.history_tree.heading('kCal Out', text="kCal Out")
 
         self.history_tree.grid(column=0, row=0)
         sb = ttk.Scrollbar(history_tree_frame, orient=tk.VERTICAL)
@@ -172,7 +173,6 @@ class CalorieHistoryFrame(tk.Frame):
 
         for item in history_data:
             date = datetime.strptime(item[1][:10],"%Y-%m-%d").strftime('%Y-%m-%d')
-            print(date)
 
             day_date = datetime.strptime(item[1][:10],"%Y-%m-%d").strftime('%a %d %b')
 
@@ -199,27 +199,38 @@ class CalorieHistoryFrame(tk.Frame):
                 #print(history_rec)
                 calorie_history[day_date] = history_rec
 
+        # Sorting is needed as out of order records may have been added.
+        sorted_data = []
+        # Build X/Y data
+        for key in calorie_history:
+            record = [calorie_history[key]['date'], key, calorie_history[key]['calories consumed'],
+                        calorie_history[key]['calories expended']]
+            #print(record)
+            sorted_data.append(record)
+        sorted_data.sort()
+
         # Plot the last 2 weeks
         #calorie_history.sort(key = self.history_sort())
 
         if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
             #print("updating graph")
 
-            self.calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
+            self.calorie_plotter.plot_save(sorted_data, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
-        self.history_tree.tag_configure('odd', font=("fixedsys",12), background='light grey')
-        self.history_tree.tag_configure('even', font=("fixedsys",12))
+        self.history_tree.tag_configure('odd', font=("fixedsys",9), background='light grey')
+        self.history_tree.tag_configure('even', font=("fixedsys",9))
 
         index =0
 
-        for key in calorie_history:
+        for i in sorted_data:
+            insert_data = [0, i[1], 0, i[2], round(i[3])]
             if index %2:
                 self.history_tree.insert(parent='', index=index,
-                                         values=(0, key, 0, calorie_history[key]['calories consumed']),
+                                         values= insert_data,
                                          tags='even')
             else:
                 self.history_tree.insert(parent='', index=index,
-                                         values=(0, key, 0, calorie_history[key]['calories consumed']),
+                                         values=insert_data,
                                          tags='odd')
             index = index + 1
 
