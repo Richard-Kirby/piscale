@@ -1,33 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
+# Google Fitness Interface Class to connect to Google via its REST interface. It processes the available credentials
+# in the client_secrets.json. Using Oauth2Client, specific authorisation tokens are saved in the fitness.dat file.
 #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# The fitness.dat authorisations will be sorted out if not available when run, but the clients_secrets.json file
+# needs to be sorted out via the Google Developer process.URL below for this particular application.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""Simple command-line sample for Blogger.
-Command-line application that retrieves the users blogs and posts.
-Usage:
-  $ python blogger.py
-You can also get help on all the command-line flags the program understands
-by running:
-  $ python blogger.py --help
-To get detailed log output run:
-  $ python blogger.py --logging_level=DEBUG
-"""
+# https://console.cloud.google.com/apis/credentials?project=piscale-calorie-minder
 from __future__ import print_function
 
-__author__ = "jcgregorio@google.com (Joe Gregorio)"
+__author__ = "richard.james.kirby@gmailcom Richard Kirby"
 
 import sys
 import time
@@ -35,7 +16,7 @@ import datetime
 import json
 import sqlite3 as sql
 import pathlib
-from datetime import datetime, timedelta
+from datetime import datetime
 import threading
 
 from oauth2client import client
@@ -43,17 +24,19 @@ from googleapiclient import sample_tools
 
 mod_path = pathlib.Path(__file__).parent
 
+# Class to connect to Google Fit to get calorie and other information.
 class GoogleFitIf(threading.Thread):
     def __init__(self, argv):
         threading.Thread.__init__(self)
+
+        # Default start time, beginning of Oct 2022.
         self.start_time = "1664582400000000000"
 
         # Connect to the DB.
         self.calories_spent_db = sql.connect(f'{mod_path}/calories_spent.db', check_same_thread=False)
 
-        print(self.calories_spent_db)
-
-        # Create the Meal History DB tables if not already created.
+        # Create the Calorie Spent DB table if not already created. This table stores the calories expended by the
+        # user through exercise and normal body functions such as breathing.
         with self.calories_spent_db:
 
             # create cursor object - this part is to create the initial table if it doesn't exist yet.
@@ -85,7 +68,7 @@ class GoogleFitIf(threading.Thread):
                 # Read all the records
                 self.calorie_history_data = self.calories_spent_db.execute("SELECT * FROM CaloriesSpent")
                 for record in self.calorie_history_data:
-                    print(record)
+                    #print(record)
 
                     # Start time is changed to ask for data based on the last record in the database.
                     self.start_time = str(record[2])
@@ -100,6 +83,22 @@ class GoogleFitIf(threading.Thread):
             scope="https://www.googleapis.com/auth/fitness.activity.read",
         )
 
+    # Provide database records to the caller. num_records of 0 will return all records.
+    def return_records(self, num_records=0):
+        self.calorie_history_data = self.calories_spent_db.execute("SELECT * FROM CaloriesSpent")
+
+        ret_list = []
+
+        for item in self.calorie_history_data:
+            #print(item)
+            ret_list.append(item)
+
+        if num_records == 0:
+            return ret_list
+        else:
+            return ret_list[:-num_records]
+
+    # Thread main processing, kicked off by start. This loops through and gets fresh data after a delay each time.
     def run(self):
 
         while(True):
@@ -129,25 +128,23 @@ class GoogleFitIf(threading.Thread):
                         datasetId=data_set). \
                     execute()
 
+            # Exception Handler for all issues, not just Token Refreshes
             except client.AccessTokenRefreshError:
                 print(
-                    "The credentials have been revoked or expired, please re-run"
-                    "the application to re-authorize"
+                    "Problem getting the data. It might be The credentials have been revoked or expired, please re-run"
+                    "the application to re-authorize. May also be some other issue - read the response from Google."
                 )
-
-            #for keys in calories_expended:
-            #    print(keys)
-
-            #print(calories_expended['point'])
 
             calorie_records =[]
 
+            # Process any calorie records received from Google Fit.
             if (calories_expended != None):
 
                 # Go through all the records of all calories expended via exercise or just breathing, etc.
                 for item in calories_expended['point']:
 
-                    #print(item)
+                    # Getting some values for use in later calculations, specifically to deal with calorie records
+                    # that split across a day.
                     start = datetime.fromtimestamp(int(item['startTimeNanos'][:-9]))
                     sec_day_start = int(item['startTimeNanos'][:-9]) % (60 * 60 * 24)
 
@@ -177,20 +174,18 @@ class GoogleFitIf(threading.Thread):
                         calories_record_day2 = [item['startTimeNanos'], item['endTimeNanos'], day2_start_datetime, end, calories_day2]
                         calorie_records.append(calories_record_day2)
 
-                    else:
-                        calories_day1 = calories
-                        calories_day2 = 0
-
+                    else: # Otherwise the calories don't have to be spread across 2 days, so just assign to the day.
                         calories_record = [item['startTimeNanos'], item['endTimeNanos'], start, end, calories]
                         calorie_records.append(calories_record)
 
 
                     # print(start, sec_day_start, end, sec_day_end, calories, calories_day1, calories_day2)
 
+                # Write new records.
                 with self.calories_spent_db:
 
                     for record in calorie_records:
-                        print(record)
+                        # print(record)
                         self.calories_spent_db.execute(
                             "INSERT INTO CaloriesSpent (StartNs, EndNs, StartDateTime, EndDateTime, Calories) values(?, ?, ?, ?, ?)"
                             , [record[0], record[1], record[2], record[3], record[4]])
@@ -200,5 +195,4 @@ class GoogleFitIf(threading.Thread):
 
 if __name__ == "__main__":
     google_fit_if = GoogleFitIf(sys.argv)
-    print(google_fit_if.start_time)
     google_fit_if.start()

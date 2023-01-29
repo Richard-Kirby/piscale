@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 import sqlite3 as sq
 import pathlib
+import numpy
 from PIL import Image, ImageTk
 
 # importing the required module
@@ -26,18 +27,30 @@ class CalorieHistoryPlotter:
 
     def plot_save(self, calorie_history, maintain, slow_loss, fast_loss, file_name):
 
-        # print("plotting")
-        x_data = []
-        y_data = []
-
+        data = []
         # Build X/Y data
         for key in calorie_history:
-            x_data.append(key)
-            y_data.append(int(calorie_history[key]))
+            record = [calorie_history[key]['date'], key, calorie_history[key]['calories consumed'],
+                        calorie_history[key]['calories expended']]
+            #print(record)
+            data.append(record)
+        data.sort()
+
+        #print(data[0])
 
         # Trim to the max history
-        x_data = x_data[-self.max_plot_points:]
-        y_data = y_data[-self.max_plot_points:]
+        data = data[-self.max_plot_points:]
+
+        x_data=[]
+        y_consumed_data=[]
+        y_expended_data=[]
+
+        for i in range(len(data)):
+            x_data.append(data[i][1])
+            y_consumed_data.append(data[i][2])
+            y_expended_data.append(data[i][3])
+
+        print(x_data, y_consumed_data)
 
         # Set up the plot
         fig, ax = plt.subplots(figsize=(6.25, 4))
@@ -48,8 +61,15 @@ class CalorieHistoryPlotter:
         plt.axhline(y=slow_loss, linewidth=1, color='y')
         plt.axhline(y=fast_loss, linewidth=1, color='g')
 
-        bar_graph = ax.bar(x_data, y_data)
-        ax.bar_label(bar_graph)
+        #ax.plot(x_data, y_data)
+        width = 0.35
+
+        x = numpy.arange(len(x_data))  # the label locations
+
+        bar_graph1 = ax.bar(x_data, y_consumed_data, width, label='Consumed')
+        bar_graph2 = ax.bar(x_data, y_expended_data, width, label='Expended')
+        ax.bar_label(bar_graph1)
+        ax.bar_label(bar_graph2)
 
         # rotate and align the tick labels so they look better
         fig.autofmt_xdate()
@@ -63,6 +83,10 @@ class CalorieHistoryPlotter:
         matplotlib.pyplot.title('Calorie History')
 
         matplotlib.pyplot.savefig(file_name)
+
+    # Sorter for history date - by date.
+    def history_sort(self, record):
+        return record['date']
 
 
 # Class to manage the updating of the history graph.
@@ -85,11 +109,14 @@ class HistoryGrapher(tk.Frame):
 
 # Class to create the Calorie History
 class CalorieHistoryFrame(tk.Frame):
-    def __init__(self, db_con, frame):
+    def __init__(self, db_con, frame, google_fit_if):
         tk.Frame.__init__(self, frame)
 
         self.history_db_con = db_con
         self.frame = frame
+
+        # Set up reference to the Google Fit Interface, which has the data of spent calories.
+        self.google_fit_if = google_fit_if
 
         temp_label = tk.Label(self.frame, text="Temp", fg="Black", font=("Helvetica", 15))
         temp_label.grid(column=0, row=0)
@@ -99,6 +126,8 @@ class CalorieHistoryFrame(tk.Frame):
         self.create_calorie_history_tree(history_tree_frame)
         history_tree_frame.grid(column=0, row=0)
         self.last_calorie_history = None
+        self.todays_calories = 0
+        self.calorie_plotter = CalorieHistoryPlotter(14)
 
     # Create the tree view object.
     def create_calorie_history_tree(self, history_tree_frame):
@@ -130,57 +159,68 @@ class CalorieHistoryFrame(tk.Frame):
         self.history_tree.config(yscrollcommand=sb.set)
         sb.config(command=self.history_tree.yview)
 
-    # Populate the history Tree View. search_date is used to get the information for that date.
-    def populate_history(self, search_date=None):
+    # Populate the history Tree View.
+    def populate_history(self):
         self.history_tree.delete(*self.history_tree.get_children())
 
+        # Get the history of calorie consumption from the database.
         with self.history_db_con:
-            if search_date is None:
-                #print("search is None")
-                history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History")
-            else:
-                #Search for today's calories
-                #print(f"Search String {search_date}")
-                history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History"
-                    " WHERE Date LIKE ?",(search_date,))
+            history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History")
 
         # Group the data per date and calculate total calories per date
         calorie_history = {}
 
         for item in history_data:
-            # print(item[1][:10], item[3])
-            # print(item[1][:10])
-            day_date = datetime.strptime(item[1][:10],"%Y-%m-%d" ).strftime('%a %d %b')
-            #print(day_date)
+            date = datetime.strptime(item[1][:10],"%Y-%m-%d").strftime('%Y-%m-%d')
+            print(date)
+
+            day_date = datetime.strptime(item[1][:10],"%Y-%m-%d").strftime('%a %d %b')
+
+            # print(calorie_history.keys())
+            if day_date in calorie_history.keys():
+                calorie_history[day_date]['calories consumed'] = calorie_history[day_date]['calories consumed']+ item[3]
+            else:
+                history_rec = {'date':date, 'calories consumed': item[3],'calories expended': 0}
+                #print(history_rec)
+                calorie_history[day_date] = history_rec
+
+        # Get the data for calories expended and add to the dictionary array. If no data of consumed calories, then
+        # set to zero.
+        calories_expended = self.google_fit_if.return_records()
+        for item in calories_expended:
+            #print(item)
+            date = datetime.strptime(item[3][:10], '%Y-%m-%d').strftime('%Y-%m-%d')
+            day_date = datetime.strptime(item[3][:10], '%Y-%m-%d').strftime('%a %d %b')
 
             if day_date in calorie_history.keys():
-                calorie_history[day_date] = calorie_history[day_date] + item[3]
+                calorie_history[day_date]['calories expended'] = calorie_history[day_date]['calories expended']+ item[5]
             else:
-                calorie_history[day_date] = item[3]
-
-        #for key in calorie_history:
-            #print("Totals:", key, calorie_history[key])
-        #    pass
+                history_rec = {'date':date, 'calories consumed': 0,'calories expended': item[5]}
+                #print(history_rec)
+                calorie_history[day_date] = history_rec
 
         # Plot the last 2 weeks
-        if self.last_calorie_history == None or self.last_calorie_history != calorie_history:
+        #calorie_history.sort(key = self.history_sort())
+
+        if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
             #print("updating graph")
-            calorie_plotter = CalorieHistoryPlotter(14)
-            calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
+
+            self.calorie_plotter.plot_save(calorie_history, 2300, 2100, 1800, 'calorie_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("fixedsys",12), background='light grey')
         self.history_tree.tag_configure('even', font=("fixedsys",12))
 
         index =0
-        self.todays_calories = 0
 
         for key in calorie_history:
             if index %2:
-                self.history_tree.insert(parent='', index=index, values=(0, key, 0, calorie_history[key]),
-                                         tags=('even'))
+                self.history_tree.insert(parent='', index=index,
+                                         values=(0, key, 0, calorie_history[key]['calories consumed']),
+                                         tags='even')
             else:
-                self.history_tree.insert(parent='', index=index, values=(0, key, 0, calorie_history[key]),
-                                         tags=('odd'))
+                self.history_tree.insert(parent='', index=index,
+                                         values=(0, key, 0, calorie_history[key]['calories consumed']),
+                                         tags='odd')
             index = index + 1
 
             #self.todays_calories = self.todays_calories + int(item[3])
@@ -193,9 +233,9 @@ class CalorieHistoryFrame(tk.Frame):
 
 
 # Class to manaage the history frame of the Application.
-class HistoryFrame():
+class HistoryFrame:
 
-    def __init__(self, frame):
+    def __init__(self, frame, google_fit_if):
         self.master_frame = frame
 
         #history_label = tk.Label(self.master_frame, text="History", fg="Black", font=("Helvetica", 15))
@@ -207,7 +247,7 @@ class HistoryFrame():
         self.graph_frame = tk.Frame(self.master_frame)
 
         # Object for the Calorie History.
-        self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame)
+        self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame, google_fit_if)
         self.calorie_history.populate_history()
 
         #temp_label = tk.Label(self.calorie_history_frame, text="Temp", fg="Black", font=("Helvetica", 15))

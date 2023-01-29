@@ -18,6 +18,7 @@ matplotlib.use('Agg')
 
 bathroom_scale_if_ip_port = ("255.255.255.255", 6000)
 
+
 # Plots the Body Weight history bar chart along with a line showing start weight and target
 class WeightHistoryPlotter:
     def __init__(self, max_plot_points):
@@ -25,6 +26,7 @@ class WeightHistoryPlotter:
         self.max_plot_points = max_plot_points
         self.label_increment = 1
 
+    # Saves the plot to a file. Makes it available for use by the application or for sending out.
     def plot_save(self, body_weight_history, start_weight, target_weight, file_name):
 
         # print("plotting")
@@ -48,8 +50,9 @@ class WeightHistoryPlotter:
         plt.axhline(y=start_weight, linewidth=1, color='r')
         plt.axhline(y=target_weight, linewidth=1, color='y')
 
-        bar_graph = ax.bar(x_data, y_data)
-        ax.bar_label(bar_graph)
+        ax.plot(x_data, y_data)
+        #bar_graph = ax.bar(x_data, y_data)
+        #ax.bar_label(bar_graph)
 
         # rotate and align the tick labels so they look better
         fig.autofmt_xdate()
@@ -62,10 +65,10 @@ class WeightHistoryPlotter:
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
 
-        ymax = round(start_weight+10, -1)
-        ymin = round(target_weight -30, -1)
+        #ymax = round(start_weight+10, -1)
+        # ymin = round(target_weight -30, -1)
 
-        matplotlib.pyplot.ylim ([ymin,ymax])
+        # matplotlib.pyplot.ylim ([ymin,ymax])
 
         matplotlib.pyplot.savefig(file_name)
 
@@ -108,6 +111,7 @@ class WeightHistoryFrame(tk.Frame):
         self.bathroom_scale_if.daemon = True
         self.bathroom_scale_if.start()
 
+    # Deletes the entry requested - usually to clean up a poor measurement for some reason.
     def del_entry(self):
         print("delete")
         selected = self.history_tree.selection()
@@ -155,7 +159,7 @@ class WeightHistoryFrame(tk.Frame):
         sb.config(command=self.history_tree.yview)
 
     # Populate the history Tree View. search_date is used to get the information for that date.
-    def populate_history(self, search_date=None):
+    def populate_history(self):
         self.history_tree.delete(*self.history_tree.get_children())
 
         weight_history = self.bathroom_scale_if.return_records()
@@ -163,9 +167,8 @@ class WeightHistoryFrame(tk.Frame):
         print(weight_history)
 
         # Plot the last 2 weeks
-        if self.last_weight_history == None or self.last_weight_history != weight_history:
-            #print("updating graph")
-            weight_plotter = WeightHistoryPlotter(14)
+        if self.last_weight_history is None or self.last_weight_history != weight_history:
+            weight_plotter = WeightHistoryPlotter(90)
             weight_plotter.plot_save(weight_history, 94, 80, 'weight_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("fixedsys",12), background='light grey')
@@ -192,7 +195,7 @@ class WeightHistoryFrame(tk.Frame):
 
 
 # Class to manaage the history frame of the Application.
-class BodyWeightFrame():
+class BodyWeightFrame:
 
     def __init__(self, frame):
         self.master_frame = frame

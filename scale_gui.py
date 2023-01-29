@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import ttk
 import time
@@ -17,6 +18,8 @@ import history
 
 # Import the Body Weight classes
 import body_weight
+
+import google_fit_if
 
 mod_path = pathlib.Path(__file__).parent
 # print(mod_path)
@@ -119,8 +122,18 @@ class App(tk.Frame):
         self.time_label.grid(column=2, row=0, sticky='e')
         exit_btn.grid(column=3, row=0, sticky ='e')
 
+        # The daily frame has all the stuff to measure food, etc.
         self.create_daily_frame(daily_frame)
-        self.history_frame_hdl= history.HistoryFrame(history_frame)
+
+        # Create the Google Fit If Object, which connects to Google Fit to get calories expended data.
+        google_fit_if_obj = google_fit_if.GoogleFitIf(sys.argv)
+
+        # Create the calorie history and body weight frames.
+
+        # Calorie history includes the Google Fit Object as it has the data for expended calories.
+        self.history_frame_hdl= history.HistoryFrame(history_frame, google_fit_if_obj)
+
+        # Body weight frame contains the measurements for the body weight from the bathroom scale.
         self.body_weight_frame_hdl = body_weight.BodyWeightFrame(body_weight_frame)
 
     # Create the frame for the Daily tab in the notebook - this is used for normal interactions, like weighing food
