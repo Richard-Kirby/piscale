@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 import pathlib
 from PIL import Image, ImageTk
+import matplotlib.dates as dates
 
 # importing the required module
 import matplotlib
@@ -35,7 +36,7 @@ class WeightHistoryPlotter:
 
         # Build X/Y data
         for record in body_weight_history:
-            x_data.append(record[1][5:19])
+            x_data.append(datetime.strptime(record[1][:10], '%Y-%m-%d').date())
             y_data.append(float(record[3]))
 
         # Trim to the max history
@@ -50,12 +51,16 @@ class WeightHistoryPlotter:
         plt.axhline(y=start_weight, linewidth=1, color='r')
         plt.axhline(y=target_weight, linewidth=1, color='y')
 
-        ax.plot(x_data, y_data)
-        #bar_graph = ax.bar(x_data, y_data)
-        #ax.bar_label(bar_graph)
+        ax.plot(x_data, y_data, 'bx')
 
-        # rotate and align the tick labels so they look better
+        #xfmt = dates.DateFormatter('%d-%m-%y')
+        #ax.xaxis.set_major_formatter(xfmt)
+
+        # ax.locator_params(axis='x', nbins=2)
+
+        # rotate and align the tick labels so they look bette
         fig.autofmt_xdate()
+
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')

@@ -58,8 +58,8 @@ class CalorieHistoryPlotter:
         x = numpy.arange(len(x_data))  # the label locations
         #print(x)
 
-        bar_graph1 = ax.bar(x - width/2, y_consumed_data, width, label='Consumed')
-        bar_graph2 = ax.bar(x + width/2, y_expended_data, width, label='Expended')
+        bar_graph1 = ax.bar(x - width/2, y_consumed_data, width, label='kCal In')
+        bar_graph2 = ax.bar(x + width/2, y_expended_data, width, label='kCal Out')
         ax.bar_label(bar_graph1, rotation='vertical', padding = 3)
         ax.bar_label(bar_graph2, rotation='vertical', padding = 3)
 
