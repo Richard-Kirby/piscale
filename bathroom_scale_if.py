@@ -4,6 +4,10 @@ import sqlite3 as sql
 import pathlib
 from datetime import datetime, timedelta
 
+import logging
+
+logger = logging.getLogger('scaleLogger')
+
 mod_path = pathlib.Path(__file__).parent
 
 # Class to manage the interface ot the Bathroom scale. Receives UDP messages, throwing out duplicates and adds them
@@ -90,7 +94,7 @@ class BathroomScaleIF(threading.Thread):
         ret_list = []
 
         for item in body_weight_history:
-            print(item)
+            #print(item)
             ret_list.append(item)
 
         if num_records ==0:

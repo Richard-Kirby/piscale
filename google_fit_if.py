@@ -18,6 +18,9 @@ import sqlite3 as sql
 import pathlib
 from datetime import datetime
 import threading
+import logging
+
+logger = logging.getLogger("scaleLogger")
 
 from oauth2client import client
 from googleapiclient import sample_tools
@@ -31,6 +34,7 @@ class GoogleFitIf(threading.Thread):
 
         # Default start time, beginning of Oct 2022.
         self.start_time = "1664582400000000000"
+        self.argv = argv
 
         # Connect to the DB.
         self.calories_spent_db = sql.connect(f'{mod_path}/calories_spent.db', check_same_thread=False)
@@ -73,15 +77,7 @@ class GoogleFitIf(threading.Thread):
                     # Start time is changed to ask for data based on the last record in the database.
                     self.start_time = str(record[2])
 
-        # Authenticate and construct service.
-        self.service, self.flags = sample_tools.init(
-            argv,
-            "fitness",
-            "v1",
-            __doc__,
-            __file__,
-            scope="https://www.googleapis.com/auth/fitness.activity.read",
-        )
+        self.service, self.flags = None, None
 
     # Provide database records to the caller. num_records of 0 will return all records.
     def return_records(self, num_records=0):
@@ -101,13 +97,27 @@ class GoogleFitIf(threading.Thread):
     # Thread main processing, kicked off by start. This loops through and gets fresh data after a delay each time.
     def run(self):
 
+        logger.info("Google If run() function start")
         while(True):
             data_set = self.start_time +  '-' + str(time.time_ns())
 
             try:
 
-                data_sources = self.service.users().dataSources().list(userId='me').execute()
+                # Authenticate and construct service.
+                self.service, self.flags = sample_tools.init(
+                    self.argv,
+                    "fitness",
+                    "v1",
+                    __doc__,
+                    __file__,
+                    scope="https://www.googleapis.com/auth/fitness.activity.read",
+                )
 
+                logger.info(f"Service {self.service} Flags {self.flags}")
+
+                '''
+                data_sources = self.service.users().dataSources().list(userId='me').execute()
+ 
                 for index, s in enumerate(data_sources['dataSource']):
 
                     #print(f"\n\ndata stream-->{s['dataStreamId']}")
@@ -120,6 +130,7 @@ class GoogleFitIf(threading.Thread):
                         datasets(). \
                         get(userId='me', dataSourceId='derived:com.google.active_minutes:com.google.android.gms: merge_active_minutes', datasetId=data_set). \
                         execute()
+                '''
 
                 calories_expended = self.service.users().dataSources(). \
                     datasets(). \
@@ -130,67 +141,67 @@ class GoogleFitIf(threading.Thread):
 
             # Exception Handler for all issues, not just Token Refreshes
             except client.AccessTokenRefreshError:
-                print(
+                logger.error(
                     "Problem getting the data. It might be The credentials have been revoked or expired, please re-run"
                     "the application to re-authorize. May also be some other issue - read the response from Google."
                 )
 
             calorie_records =[]
 
-            # Process any calorie records received from Google Fit.
-            if (calories_expended != None):
+            logger.info(f"Calories Expended {calories_expended}")
 
-                # Go through all the records of all calories expended via exercise or just breathing, etc.
-                for item in calories_expended['point']:
+            # Go through all the records of all calories expended via exercise or just breathing, etc.
+            # Note that the calories expended is often empty.
+            for item in calories_expended['point']:
 
-                    # Getting some values for use in later calculations, specifically to deal with calorie records
-                    # that split across a day.
-                    start = datetime.fromtimestamp(int(item['startTimeNanos'][:-9]))
-                    sec_day_start = int(item['startTimeNanos'][:-9]) % (60 * 60 * 24)
+                # Getting some values for use in later calculations, specifically to deal with calorie records
+                # that split across a day.
+                start = datetime.fromtimestamp(int(item['startTimeNanos'][:-9]))
+                sec_day_start = int(item['startTimeNanos'][:-9]) % (60 * 60 * 24)
 
-                    end = datetime.fromtimestamp(int(item['endTimeNanos'][:-9]))
-                    sec_day_end = int(item['endTimeNanos'][:-9]) % (60 * 60 * 24)
+                end = datetime.fromtimestamp(int(item['endTimeNanos'][:-9]))
+                sec_day_end = int(item['endTimeNanos'][:-9]) % (60 * 60 * 24)
 
-                    calories = float(item['value'][0]['fpVal'])
+                calories = float(item['value'][0]['fpVal'])
 
-                    # Split calories if crosses between dates. In this case the seconds between the end time and the beginning
-                    # of the day will be smaller than the start time.
-                    if sec_day_end < sec_day_start:
-                        # Split calories according to num of seconds in the time range.
-                        calories_day1 = ((60*60*24)- sec_day_start)/((60*60*24)- sec_day_start + sec_day_end) * calories
-                        calories_day2 = calories - calories_day1
+                # Split calories if crosses between dates. In this case the seconds between the end time and the beginning
+                # of the day will be smaller than the start time.
+                if sec_day_end < sec_day_start:
+                    # Split calories according to num of seconds in the time range.
+                    calories_day1 = ((60*60*24)- sec_day_start)/((60*60*24)- sec_day_start + sec_day_end) * calories
+                    calories_day2 = calories - calories_day1
 
-                        # Calculate the start of day 2 in sec by using int division to truncate. I.e. 00:00:00 of Day 2.
-                        # Subtract one second to create the end time for day 1. i.e. 23:59:59
-                        day2_start_s = int(int(item['endTimeNanos'][:-9]) / (60 * 60 * 24)) * (60 * 60 * 24)
-                        day1_end_datetime = datetime.fromtimestamp(day2_start_s - 1)
+                    # Calculate the start of day 2 in sec by using int division to truncate. I.e. 00:00:00 of Day 2.
+                    # Subtract one second to create the end time for day 1. i.e. 23:59:59
+                    day2_start_s = int(int(item['endTimeNanos'][:-9]) / (60 * 60 * 24)) * (60 * 60 * 24)
+                    day1_end_datetime = datetime.fromtimestamp(day2_start_s - 1)
 
-                        # Create the record for day 1
-                        calories_record_day1 = [item['startTimeNanos'], item['endTimeNanos'], start, day1_end_datetime, calories_day1]
-                        calorie_records.append(calories_record_day1)
+                    # Create the record for day 1
+                    calories_record_day1 = [item['startTimeNanos'], item['endTimeNanos'], start, day1_end_datetime, calories_day1]
+                    calorie_records.append(calories_record_day1)
 
-                        # Create day 2 record by going from 00:00 to the end time
-                        day2_start_datetime = datetime.fromtimestamp(day2_start_s)
-                        calories_record_day2 = [item['startTimeNanos'], item['endTimeNanos'], day2_start_datetime, end, calories_day2]
-                        calorie_records.append(calories_record_day2)
+                    # Create day 2 record by going from 00:00 to the end time
+                    day2_start_datetime = datetime.fromtimestamp(day2_start_s)
+                    calories_record_day2 = [item['startTimeNanos'], item['endTimeNanos'], day2_start_datetime, end, calories_day2]
+                    calorie_records.append(calories_record_day2)
 
-                    else: # Otherwise the calories don't have to be spread across 2 days, so just assign to the day.
-                        calories_record = [item['startTimeNanos'], item['endTimeNanos'], start, end, calories]
-                        calorie_records.append(calories_record)
+                else: # Otherwise the calories don't have to be spread across 2 days, so just assign to the day.
+                    calories_record = [item['startTimeNanos'], item['endTimeNanos'], start, end, calories]
+                    calorie_records.append(calories_record)
 
+            # Write new records.
+            with self.calories_spent_db:
 
-                    # print(start, sec_day_start, end, sec_day_end, calories, calories_day1, calories_day2)
+                for record in calorie_records:
+                    # print(record)
+                    self.calories_spent_db.execute(
+                        "INSERT INTO CaloriesSpent (StartNs, EndNs, StartDateTime, EndDateTime, Calories) values(?, ?, ?, ?, ?)"
+                        , [record[0], record[1], record[2], record[3], record[4]])
+                    self.start_time = record[1]
+                    logger.info(record)
 
-                # Write new records.
-                with self.calories_spent_db:
-
-                    for record in calorie_records:
-                        # print(record)
-                        self.calories_spent_db.execute(
-                            "INSERT INTO CaloriesSpent (StartNs, EndNs, StartDateTime, EndDateTime, Calories) values(?, ?, ?, ?, ?)"
-                            , [record[0], record[1], record[2], record[3], record[4]])
-                        self.start_time = record[1]
-                time.sleep(60*15)
+            # Wait to avoid too much interaction with Google
+            time.sleep(60*5)
 
 
 if __name__ == "__main__":

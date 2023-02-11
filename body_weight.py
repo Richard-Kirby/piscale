@@ -10,6 +10,10 @@ import matplotlib.dates as dates
 import matplotlib
 import matplotlib.pyplot as plt
 
+import logging
+
+logger=logging.getLogger("scaleLogger")
+
 import bathroom_scale_if
 
 mod_path = pathlib.Path(__file__).parent
@@ -77,6 +81,9 @@ class WeightHistoryPlotter:
 
         matplotlib.pyplot.savefig(file_name)
 
+        # Close the plot to reduce memory usage.
+        matplotlib.pyplot.close()
+
 
 # Class to manage the updating of the history graph.
 class HistoryGrapher(tk.Frame):
@@ -118,15 +125,15 @@ class WeightHistoryFrame(tk.Frame):
 
     # Deletes the entry requested - usually to clean up a poor measurement for some reason.
     def del_entry(self):
-        print("delete")
+        #print("delete")
         selected = self.history_tree.selection()
         # print(selected)
         if len(selected) != 0:
             chosen_entry = self.history_tree.item(selected[0])
-            print(chosen_entry)
+            # print(chosen_entry)
             db_id, date, user, weight = chosen_entry["values"]
             # print(self.weight)
-            print(db_id, date, user, weight)
+            #print(db_id, date, user, weight)
 
             # Delete the selected item from the database
             self.bathroom_scale_if.delete_entry(db_id)
@@ -169,7 +176,7 @@ class WeightHistoryFrame(tk.Frame):
 
         weight_history = self.bathroom_scale_if.return_records()
 
-        print(weight_history)
+        # print(weight_history)
 
         # Plot the last 2 weeks
         if self.last_weight_history is None or self.last_weight_history != weight_history:
@@ -190,13 +197,10 @@ class WeightHistoryFrame(tk.Frame):
                                          tags=('odd'))
             index = index + 1
 
-            #self.todays_calories = self.todays_calories + int(item[3])
-            ##print(self.todays_calories)
-
         self.last_weight_history = weight_history
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000*1, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
+        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
@@ -218,5 +222,7 @@ class BodyWeightFrame:
 
         self.weight_history_frame.grid(column=0, row=0)
         self.graph_frame.grid(column=1, row=0)
+
+        logger.info("Body Weight Handling")
 
 

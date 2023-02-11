@@ -8,6 +8,13 @@ import pathlib
 from PIL import Image, ImageTk
 import subprocess
 
+import logging.config
+
+logging.config.fileConfig('logging.conf')
+
+# create logger
+logger = logging.getLogger('scaleLogger')
+
 import cProfile
 
 # HX711 library for the scale interface.
@@ -662,12 +669,10 @@ class App(tk.Frame):
         self.meal_total_calories = 0
         self.update_meal_calories()
 
-
 root = tk.Tk()
 app=App(root)
 root.wm_title("Fatman Scale")
-
-
+logger.info("Start Up GUI")
 
 root.attributes('-fullscreen', True)
 app.update_clock()

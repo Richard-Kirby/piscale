@@ -11,6 +11,10 @@ from PIL import Image, ImageTk
 import matplotlib
 import matplotlib.pyplot as plt
 
+import logging
+logger = logging.getLogger("scaleLogger")
+logger.setLevel(logging.INFO)
+
 mod_path = pathlib.Path(__file__).parent
 
 # Need to use this if no interactive window.
@@ -82,6 +86,9 @@ class CalorieHistoryPlotter:
 
         matplotlib.pyplot.savefig(file_name)
 
+        # Close the plot to reduce memory usage.
+        matplotlib.pyplot.close()
+
     # Sorter for history date - by date.
     def history_sort(self, record):
         return record['date']
@@ -102,7 +109,7 @@ class HistoryGrapher(tk.Frame):
         img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
         self.graph_label.configure(image=img)
         self.graph_label.image = img
-        self.after(60*1000*1, self.update_graph) # Update after 13 minutes
+        self.after(60*1000*13, self.update_graph) # Update after 13 minutes
 
 
 # Class to create the Calorie History
@@ -194,6 +201,8 @@ class CalorieHistoryFrame(tk.Frame):
 
             if day_date in calorie_history.keys():
                 calorie_history[day_date]['calories expended'] = calorie_history[day_date]['calories expended']+ item[5]
+                logger.debug(f"Building Calories Expended {day_date} {item[5]} "
+                             f"{calorie_history[day_date]['calories expended']}")
             else:
                 history_rec = {'date':date, 'calories consumed': 0,'calories expended': item[5]}
                 #print(history_rec)
@@ -234,13 +243,10 @@ class CalorieHistoryFrame(tk.Frame):
                                          tags='odd')
             index = index + 1
 
-            #self.todays_calories = self.todays_calories + int(item[3])
-            ##print(self.todays_calories)
-
         self.last_calorie_history = calorie_history
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000*1, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
+        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
@@ -260,12 +266,6 @@ class HistoryFrame:
         # Object for the Calorie History.
         self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame, google_fit_if)
         self.calorie_history.populate_history()
-
-        #temp_label = tk.Label(self.calorie_history_frame, text="Temp", fg="Black", font=("Helvetica", 15))
-        #temp_label.grid(column=0, row=0)
-
-        #history_label.grid(column=0, row=0)
-        #history_label.grid(column=0, row=0)
 
         history_grapher = HistoryGrapher(self.graph_frame)
         history_grapher.update_graph()
