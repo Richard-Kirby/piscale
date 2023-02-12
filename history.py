@@ -72,14 +72,14 @@ class CalorieHistoryPlotter:
 
         # rotate and align the tick labels so they look better
         fig.autofmt_xdate()
-        fig.tight_layout()
+        #fig.tight_layout()
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
 
         # naming the y axis
         matplotlib.pyplot.ylabel('Calorie History',)
-        matplotlib.pyplot.ylim(0, 2800)
+        matplotlib.pyplot.ylim(0, 3000)
 
         # giving a title to my graph
         matplotlib.pyplot.title('Calorie History')

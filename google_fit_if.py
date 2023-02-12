@@ -209,7 +209,7 @@ class GoogleFitIf(threading.Thread):
                     logger.info(record)
 
             # Wait to avoid too much interaction with Google
-            time.sleep(60*5)
+            time.sleep(60*11)
 
 
 if __name__ == "__main__":
