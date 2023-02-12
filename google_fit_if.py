@@ -19,6 +19,7 @@ import pathlib
 from datetime import datetime
 import threading
 import logging
+from socket import gaierror
 
 logger = logging.getLogger("scaleLogger")
 
@@ -145,6 +146,13 @@ class GoogleFitIf(threading.Thread):
                     "Problem getting the data. It might be The credentials have been revoked or expired, please re-run"
                     "the application to re-authorize. May also be some other issue - read the response from Google."
                 )
+
+            except gaierror as err:
+                logger.error(f"Socket gai error raised - try to keep working {err=}, {type(err)=}")
+
+            # Generic Exception Handler. Just continue on, hoping that it is temporary.
+            except Exception as err:
+                logger.error(f"Unexpected {err=}, {type(err)=}")
 
             calorie_records =[]
 

@@ -671,7 +671,7 @@ class App(tk.Frame):
 
 root = tk.Tk()
 app=App(root)
-root.wm_title("Fatman Scale")
+root.wm_title("Piscale Calorie Minder - a Richard Kirby project")
 logger.info("Start Up GUI")
 
 root.attributes('-fullscreen', True)
