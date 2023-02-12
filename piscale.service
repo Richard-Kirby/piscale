@@ -9,6 +9,7 @@ Restart=always
 RestartSec=10s
 KillMode=process
 TimeoutSec=infinity
+WorkingDirectory=/home/kirbypi/piscale
 
 [Install]
 WantedBy=graphical.target
