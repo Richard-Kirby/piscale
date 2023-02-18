@@ -246,7 +246,7 @@ class CalorieHistoryFrame(tk.Frame):
         self.last_calorie_history = calorie_history
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
+        self.after(60*1000*23, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
