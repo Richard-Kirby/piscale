@@ -39,6 +39,7 @@ class App(tk.Frame):
     def __init__(self, master=None):
 
         tk.Frame.__init__(self, master)
+        self.selected_item_cal_label = None
         self.weight = None
         self.master = master
 
@@ -88,7 +89,7 @@ class App(tk.Frame):
         self.master.bind('<Return>', self.search_food_data)
 
         # Connection to database of food.
-        self.db_con = sq.connect(f'{mod_path}/food_data.db')
+        self.food_data_db_con = sq.connect(f'{mod_path}/food_data.db')
         self.history_db_con = sq.connect(f'{mod_path}/history.db')
         self.meal_history_db_con = sq.connect(f'{mod_path}/meal_history.db')
 
@@ -110,11 +111,17 @@ class App(tk.Frame):
                 # Create the table as it wasn't found.
                 self.meal_history_db_con.execute(""" CREATE TABLE MealHistory(
                         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        unix_ms INTEGER,
                         Date TEXT,
+                        fooddata_db_id INTEGER,
+                        FoodCode TEXT,
                         FoodName TEXT,
                         PROT FLOAT,
                         FAT FLOAT,
                         CHO FLOAT,
+                        CHOL FLOAT,
+                        TOTSUG FLOAT,
+                        AOACFIB FLOAT,
                         KCALS FLOAT,
                         WEIGHT FLOAT
                         );
@@ -348,7 +355,8 @@ class App(tk.Frame):
         food_data_frame.columnconfigure(1, weight=1)
 
         # List of food and their characteristics.
-        self.food_tree_view = ttk.Treeview(food_data_frame, columns=('db_id', 'FoodName', 'kCal', 'Fave'),
+        self.food_tree_view = ttk.Treeview(food_data_frame,
+                                           columns=('db_id', 'FoodCode', 'FoodName',  'kCal', 'Fave'),
                                            show='headings', height=16)
 
         self.food_tree_view["displaycolumns"] = ('FoodName', 'kCal')
@@ -356,6 +364,7 @@ class App(tk.Frame):
         self.food_tree_view.column('kCal', anchor=tk.E, width=40)
         self.food_tree_view.column('Fave', anchor=tk.CENTER, width=20)
         self.food_tree_view.heading('FoodName', text="Food Name")
+        self.food_tree_view.heading('FoodCode', text="Food Code")
         self.food_tree_view.heading('kCal', text="kCal/100g")
         self.food_tree_view.heading('Fave', text="Fave")
         self.food_tree_view.grid(column=0, row=0)
@@ -387,11 +396,13 @@ class App(tk.Frame):
         meal_frame.columnconfigure(1, weight=1)
 
         # Create the meal TreeView, which tracks the meal
-        self.meal_tree_view = ttk.Treeview(meal_frame, columns=('FoodName', 'Weight', 'kCal'),
+        self.meal_tree_view = ttk.Treeview(meal_frame,
+                                           columns=('db_id', 'FoodCode', 'FoodName', 'Weight', 'kCal'),
                                            show='headings', height=6)
         self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=160)
         self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=50)
         self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=50)
+        self.meal_tree_view["displaycolumns"] = ('FoodName', 'Weight', 'kCal')
 
         self.meal_tree_view.heading('FoodName', text="Food Name")
         self.meal_tree_view.heading('kCal', text="kCal")
@@ -436,20 +447,20 @@ class App(tk.Frame):
 
         # print(f"Search String {search}")
 
-        with self.db_con:
+        with self.food_data_db_con:
             # print(self.favorite_radio_sel.get())
             if self.favorite_radio_sel.get() == 1:
                 if search is None:
                     # print("search is None")
-                    food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
+                    food_data = self.food_data_db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData")
                 else:
                     search = f"%{search}%"
                     # print(f"Search String 2 {search}")
-                    food_data = self.db_con.execute(
+                    food_data = self.food_data_db_con.execute(
                         "SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData WHERE FoodName LIKE ?",
                         (search,))
             else:
-                food_data = self.db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData"
+                food_data = self.food_data_db_con.execute("SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData"
                                                 " WHERE Favourite=1")
 
         self.food_tree_view.tag_configure('odd', font=data_font, background='light grey')
@@ -461,29 +472,33 @@ class App(tk.Frame):
         small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
         index = 0
+
+        # Adding food to the food view tree. This is where user selects food.
         for food in food_data:
-            # print(food[3])
-            if food[4] == 1:
+            if food[3] == 'N' or food[3] == 'Tr' or food[3] == '':
+                k_cal = '0'
+            else:
+                k_cal = int(food[3])
+
+            if food[4] == 1: # Check to see if a favourite - if it is a favourite, the formatting is different.
                 if index % 2:
-                    self.food_tree_view.insert(parent='', image=small_fave_image, index=food[0],
-                                               values=(food[0], food[2], int(food[3]), food[4]),
+                    self.food_tree_view.insert(parent='', index=food[0],
+                                               values=(food[0], food[1], food[2], k_cal, food[4]),
                                                tags='even_fave')
                 else:
-                    self.food_tree_view.insert(parent='', image=small_fave_image, index=food[0],
-                                               values=(food[0], food[2], int(food[3]), food[4]),
+                    self.food_tree_view.insert(parent='', index=food[0],
+                                               values=(food[0], food[1], food[2], k_cal, food[4]),
                                                tags='odd_fave')
-            elif index % 2:
-                self.food_tree_view.insert(parent='', image=small_fave_image, index=food[0],
-                                           values=(food[0], food[2], food[3], food[4]),
-                                           tags='even')
-                self.food_tree_view.image = small_fave_image
             else:
-                self.food_tree_view.insert(parent='', index=food[0],
-                                           values=(food[0], food[2], food[3], food[4]),
-                                           tags='odd')
+                if index % 2:
+                    self.food_tree_view.insert(parent='', index=food[0],
+                                               values=(food[0], food[1], food[2], k_cal, food[4]),
+                                               tags='even')
+                else:
+                    self.food_tree_view.insert(parent='', index=food[0],
+                                               values=(food[0], food[1], food[2], k_cal, food[4]),
+                                               tags='odd')
             index = index + 1
-
-        self.food_tree_view.image = small_fave_image
 
     # Populate the history Tree View. search_date is used to get the information for that date.
     def populate_history(self):
@@ -545,12 +560,13 @@ class App(tk.Frame):
     def exit(self):
         quit()
 
-    # Adds adhoc meal e.g. snack or something ate out. Takes a name and associated calories.
+    # Adds adhoc meal e.g. snack or something ate out - or doesn't appear in the list of foods.
+    # Takes a name and associated calories.
     def adhoc_meal(self):
         # print("adhoc meal")
 
         # Add the food item to the end of the meal list.
-        self.meal_tree_view.insert(parent='', index=tk.END, values=(self.adhoc_meal_name.get(),
+        self.meal_tree_view.insert(parent='', index=tk.END, values=(0, 'None', self.adhoc_meal_name.get(),
                                                                     0, self.adhoc_meal_kcal.get()))
         self.meal_total_calories = self.meal_total_calories + self.adhoc_meal_kcal.get()
         self.adhoc_meal_box.delete(0, tk.END)
@@ -588,9 +604,9 @@ class App(tk.Frame):
         if len(selected) != 0:
             chosenfood = self.food_tree_view.item(selected[0])
             # print(chosenfood)
-            id, food_name, calories_per_100, fave = chosenfood["values"]
+            db_id, food_code, food_name, kcalories_per_100, fave = chosenfood["values"]
             # print(self.weight)
-            food_calories = float(calories_per_100) * self.weight / 100
+            food_calories = float(kcalories_per_100) * self.weight / 100
             if food_calories < 0:
                 food_calories = 0
             # print(f"{food_name} {food_calories}kCal")
@@ -603,16 +619,17 @@ class App(tk.Frame):
         selected = self.food_tree_view.selection()
         chosenfood = self.food_tree_view.item(selected[0])
         # print(chosenfood)
-        id, food_name, calories_per_100, fave = chosenfood["values"]
+        db_id, food_code, food_name, kcalories_per_100, fave = chosenfood["values"]
         # print(self.weight)
         food_weight = self.weight
         # print(food_name, calories_per_100)
-        food_calories = float(calories_per_100) * self.weight / 100
+        food_calories = float(kcalories_per_100) * self.weight / 100
         if food_calories < 0:
             food_calories = 0
 
         # Add the food item to the end of the meal list.
-        self.meal_tree_view.insert(parent='', index=tk.END, values=(food_name, food_weight, (f"{food_calories:.0f}")))
+        self.meal_tree_view.insert(parent='', index=tk.END, values=(db_id, food_code, food_name, food_weight,
+                                                                    (f"{food_calories:.0f}")))
         self.meal_total_calories = self.meal_total_calories + food_calories
         self.update_meal_calories()
 
@@ -628,7 +645,7 @@ class App(tk.Frame):
         if len(selected) > 0:
             remove_food = (self.meal_tree_view.item(selected[0]))
             # print(remove_food)
-            remove_food_name, weight, calories = remove_food["values"]
+            db_id, food_cde, remove_food_name, weight, calories = remove_food["values"]
 
             # print(remove_food_name, weight, calories)
 
@@ -650,21 +667,84 @@ class App(tk.Frame):
             # print(sel_item)
             id = self.food_tree_view.item(selected[0])["values"][0]
 
-            if self.food_tree_view.item(selected[0])["values"][3] == 0:
+            if self.food_tree_view.item(selected[0])["values"][4] == 0:
                 Favourite = 1
             else:
                 Favourite = 0
 
             # Update the selected item with the new favourite setting
-            with self.db_con:
-                self.db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite, id])
+            with self.food_data_db_con:
+                self.food_data_db_con.execute("UPDATE FoodData SET Favourite = ? where id= ?", [Favourite, id])
 
         self.populate_food_data()
 
     # This adds to the history of meals
     def add_to_history(self):
+
+        now_micro = time.time()
+        print(now_micro)
+
         now = datetime.now().replace(microsecond=0)
         now.replace(second=0)
+
+        # Get all the items from the meal.
+        meal = self.meal_tree_view.get_children()
+        for part in meal:
+            #print(part)
+            #print(self.meal_tree_view.item(part)['values'])
+            fooddata_db_id, foodcode, foodname, weight, calories   = self.meal_tree_view.item(part)['values']
+            print(fooddata_db_id, foodcode, foodname, weight, calories)
+
+            if fooddata_db_id !=0:
+                part_data = self.food_data_db_con.execute(
+                    "SELECT id, FoodCode, FoodName, PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB FROM FoodData WHERE id = ?",
+                    (fooddata_db_id,))
+
+                for data in part_data:
+
+                    id, foodcode, foodname, protein, fat, cho, chol, totsug, aoacfib = data
+                    # print(id, foodcode, foodname, protein, fat, cho, chol, totsug, aoacfib)
+
+                    weight = float(weight)
+                    if protein != 'N' and protein != 'Tr' and protein!= '':
+                        tot_protein = protein * weight/100
+                    else:
+                        tot_protein = 0
+
+                    if fat != 'N' and fat != 'Tr' and fat != '':
+                        tot_fat = fat * weight / 100
+                    else:
+                        tot_fat = 0
+
+                    if cho != 'N' and cho != 'Tr' and cho != '':
+                        tot_cho = cho * weight / 100
+                    else:
+                        tot_cho = 0
+
+                    if chol != 'N' and chol != 'Tr' and chol != '':
+                        tot_chol = chol * weight / 100
+                    else:
+                        tot_chol = 0
+
+                    if totsug != 'N' and totsug != 'Tr' and totsug != '':
+                        tot_sug = totsug * weight / 100
+                    else:
+                        tot_sug = 0
+
+                    if aoacfib != 'N' and aoacfib != 'Tr' and aoacfib != '':
+                        tot_aoacfib = aoacfib * weight / 100
+                    else:
+                        tot_aoacfib = 0
+                        
+                    logger.info(f'Meal History Add -->weight {weight}g protein {tot_protein}g, fat {tot_fat}g, '
+                                f'carbs {tot_cho}g, chol {tot_chol}g, sugar {tot_sug}g, aoacfib {tot_aoacfib}')
+
+                self.meal_history_db_con.execute('INSERT INTO MealHistory (unix_ms, Date, fooddata_db_id, FoodName, '
+                                                 'PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB, KCALS, WEIGHT) '
+                                                 'values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                                 [now_micro, now, fooddata_db_id, foodname,
+                                                  tot_protein, tot_fat, tot_cho, tot_chol,
+                                                  tot_sug, tot_aoacfib, calories, weight])
 
         if self.meal_total_calories != 0:
             with self.history_db_con:
