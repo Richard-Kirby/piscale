@@ -104,6 +104,7 @@ class GoogleFitIf(threading.Thread):
 
             try:
 
+                logger.info(f"Setting up Google IF. Data Set {data_set}")
                 # Authenticate and construct service.
                 self.service, self.flags = sample_tools.init(
                     self.argv,
@@ -153,6 +154,9 @@ class GoogleFitIf(threading.Thread):
             # Generic Exception Handler. Just continue on, hoping that it is temporary.
             except Exception as err:
                 logger.error(f"Unexpected {err=}, {type(err)=}")
+
+            except:
+                logger.error("unprocessed exception")
 
             calorie_records =[]
 
