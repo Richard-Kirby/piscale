@@ -14,6 +14,7 @@ logging.config.fileConfig('logging.conf')
 
 # create logger
 logger = logging.getLogger('scaleLogger')
+logger.setLevel(logging.DEBUG)
 
 import cProfile
 
@@ -696,6 +697,7 @@ class App(tk.Frame):
             print(fooddata_db_id, foodcode, foodname, weight, calories)
 
             if fooddata_db_id !=0:
+                logger.debug(f"Food data being gathered for {fooddata_db_id}")
                 part_data = self.food_data_db_con.execute(
                     "SELECT id, FoodCode, FoodName, PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB FROM FoodData WHERE id = ?",
                     (fooddata_db_id,))
@@ -739,12 +741,14 @@ class App(tk.Frame):
                     logger.info(f'Meal History Add -->weight {weight}g protein {tot_protein}g, fat {tot_fat}g, '
                                 f'carbs {tot_cho}g, chol {tot_chol}g, sugar {tot_sug}g, aoacfib {tot_aoacfib}')
 
-                self.meal_history_db_con.execute('INSERT INTO MealHistory (unix_ms, Date, fooddata_db_id, FoodName, '
-                                                 'PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB, KCALS, WEIGHT) '
-                                                 'values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                                                 [now_micro, now, fooddata_db_id, foodname,
-                                                  tot_protein, tot_fat, tot_cho, tot_chol,
-                                                  tot_sug, tot_aoacfib, calories, weight])
+                    ret = self.meal_history_db_con.execute('INSERT INTO MealHistory (unix_ms, Date, fooddata_db_id, FoodName,'
+                                                            'PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB, KCALS, WEIGHT) '
+                                                            ' values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                                            [now_micro, now, fooddata_db_id, foodname,
+                                                            tot_protein, tot_fat, tot_cho, tot_chol,
+                                                            tot_sug, tot_aoacfib, calories, weight])
+                    logger.info(f'sql return {ret}')
+                    self.meal_history_db_con.commit()
 
         if self.meal_total_calories != 0:
             with self.history_db_con:
