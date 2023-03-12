@@ -1,1 +1,0 @@
-https://accounts.google.com/o/oauth2/auth?client_id=789819628447-p9p4uksqdf3paes2cl0pls5h2am8u8g5.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2F&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.activity.read&access_type=offline&response_type=code

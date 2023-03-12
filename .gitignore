@@ -133,3 +133,4 @@ dmypy.json
 *fitness*.dat
 *tmp*
 *.log.*
+users/
