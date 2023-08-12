@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-import time
+
 from datetime import datetime
 import pathlib
 from PIL import Image, ImageTk
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 import logging
 
-logger=logging.getLogger("scaleLogger")
+logger = logging.getLogger("scaleLogger")
 
 import bathroom_scale_if
 
@@ -33,7 +33,6 @@ class WeightHistoryPlotter:
 
     # Saves the plot to a file. Makes it available for use by the application or for sending out.
     def plot_save(self, body_weight_history, start_weight, target_weight, file_name):
-
         # print("plotting")
         x_data = []
         y_data = []
@@ -57,14 +56,13 @@ class WeightHistoryPlotter:
 
         ax.plot(x_data, y_data, 'bx')
 
-        #xfmt = dates.DateFormatter('%d-%m-%y')
-        #ax.xaxis.set_major_formatter(xfmt)
+        # xfmt = dates.DateFormatter('%d-%m-%y')
+        # ax.xaxis.set_major_formatter(xfmt)
 
         # ax.locator_params(axis='x', nbins=2)
 
         # rotate and align the tick labels so they look bette
         fig.autofmt_xdate()
-
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
@@ -74,7 +72,7 @@ class WeightHistoryPlotter:
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
 
-        #ymax = round(start_weight+10, -1)
+        # ymax = round(start_weight+10, -1)
         # ymin = round(target_weight -30, -1)
 
         # matplotlib.pyplot.ylim ([ymin,ymax])
@@ -93,14 +91,14 @@ class HistoryGrapher(tk.Frame):
         self.graph_label = tk.Label(frame, image=img)
         self.graph_label.image = img
         self.graph_label.grid(column=0, row=0)
-        #self.update_graph()
+        # self.update_graph()
 
     # Update the graph as it changes over time.
     def update_graph(self):
         img = ImageTk.PhotoImage(Image.open('weight_history_graph.jpg'))
         self.graph_label.configure(image=img)
         self.graph_label.image = img
-        self.after(60*1000*1, self.update_graph) # Update after 13 minutes
+        self.after(60 * 1000 * 1, self.update_graph)  # Update after 13 minutes
 
 
 # Class to create the Weight History
@@ -108,6 +106,7 @@ class WeightHistoryFrame(tk.Frame):
     def __init__(self, frame):
         tk.Frame.__init__(self, frame)
 
+        self.history_tree = None
         self.frame = frame
 
         # Create the Food Data Tree
@@ -125,7 +124,7 @@ class WeightHistoryFrame(tk.Frame):
 
     # Deletes the entry requested - usually to clean up a poor measurement for some reason.
     def del_entry(self):
-        #print("delete")
+        # print("delete")
         selected = self.history_tree.selection()
         # print(selected)
         if len(selected) != 0:
@@ -133,7 +132,7 @@ class WeightHistoryFrame(tk.Frame):
             # print(chosen_entry)
             db_id, date, user, weight = chosen_entry["values"]
             # print(self.weight)
-            #print(db_id, date, user, weight)
+            # print(db_id, date, user, weight)
 
             # Delete the selected item from the database
             self.bathroom_scale_if.delete_entry(db_id)
@@ -141,16 +140,16 @@ class WeightHistoryFrame(tk.Frame):
     # Create the tree view object.
     def create_weight_history_tree(self, history_tree_frame):
 
-        #temp_label = tk.Label(history_tree_frame, text="Temp", fg="Black", font=("Helvetica", 15))
-        #temp_label.grid(column=1, row=0)
+        # temp_label = tk.Label(history_tree_frame, text="Temp", fg="Black", font=("Helvetica", 15))
+        # temp_label.grid(column=1, row=0)
         # Set up frame to have 2 columns
         history_tree_frame.columnconfigure(0, weight=4)
         history_tree_frame.columnconfigure(1, weight=1)
         history_tree_frame.columnconfigure(2, weight=1)
 
         # Create the meal TreeView, which tracks the meal
-        self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id','Date', 'User', 'Weight'),
-                                           show='headings', height=16)
+        self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id', 'Date', 'User', 'Weight'),
+                                         show='headings', height=16)
 
         self.history_tree["displaycolumns"] = ('Date', 'Weight')
 
@@ -183,24 +182,25 @@ class WeightHistoryFrame(tk.Frame):
             weight_plotter = WeightHistoryPlotter(90)
             weight_plotter.plot_save(weight_history, 94, 80, 'weight_history_graph.jpg')
 
-        self.history_tree.tag_configure('odd', font=("fixedsys",12), background='light grey')
-        self.history_tree.tag_configure('even', font=("fixedsys",12))
+        self.history_tree.tag_configure('odd', font=("fixedsys", 12), background='light grey')
+        self.history_tree.tag_configure('even', font=("fixedsys", 12))
 
-        index =0
+        index = 0
 
         for record in weight_history:
-            if index %2:
+            if index % 2:
                 self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
-                                         tags=('even'))
+                                         tags='even')
             else:
                 self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
-                                         tags=('odd'))
+                                         tags='odd')
             index = index + 1
 
         self.last_weight_history = weight_history
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60*1000*7, self.populate_history) # Update every 7 minutes - to ensure the day change gets included
+        self.after(60 * 1000 * 7,
+                   self.populate_history)  # Update every 7 minutes - to ensure the day change gets included
 
 
 # Class to manaage the history frame of the Application.
@@ -224,5 +224,3 @@ class BodyWeightFrame:
         self.graph_frame.grid(column=1, row=0)
 
         logger.info("Body Weight Handling")
-
-

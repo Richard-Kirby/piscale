@@ -59,7 +59,6 @@ with db_con:
         );
     """)
 
-
 # SQL command to create import the data.
 sql = 'INSERT INTO FoodData (\
 FoodCode, FoodName,Description, FoodGroup, Previous, Main_data_references, Footnote, WATER, TOTNIT, PROT, FAT, CHO,\
@@ -76,7 +75,7 @@ data = []
 
 # Open and process the CSV file that has the mapping between the strands/pixels and stations/Lines.
 with open('McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021Simplified.csv', newline='',
-          encoding= 'utf-16') as food_data_file:
+          encoding='utf-16') as food_data_file:
     food_reader = csv.reader(food_data_file, delimiter=',', quotechar='"')
     for row in food_reader:
         # station_data = [row[0], row[1], row[2], row[3]]
