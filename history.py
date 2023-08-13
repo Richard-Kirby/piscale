@@ -204,7 +204,7 @@ class CalorieHistoryFrame(tk.Frame):
         # Get the last record for the consumed meals.
         last_history_datetime = self.history_db_con.execute('SELECT * FROM History ORDER BY id DESC LIMIT 1').fetchone()[1]
         last_calorie_expended_datetime = self.google_fit_if.return_records(num_records=1)[0][3]
-        print(f"{last_history_datetime} {last_calorie_expended_datetime}")
+        # print(f"{last_history_datetime} {last_calorie_expended_datetime}")
 
         # Only update the history information if it has changed. See if it changed by checking he last records
         # against what was previously processed.
@@ -213,8 +213,8 @@ class CalorieHistoryFrame(tk.Frame):
 
         # Only update the history information if it has changed. See if it changed by checking he last records
         # against what was previously processed.
-        print(f"Previous data {last_history_datetime} {self.prev_history_datetime}"
-              f"{last_calorie_expended_datetime} {self.prev_expended_datetime}")
+        # print(f"Previous data {last_history_datetime} {self.prev_history_datetime}"
+        #      f"{last_calorie_expended_datetime} {self.prev_expended_datetime}")
 
         if last_calorie_expended_datetime != self.prev_expended_datetime or \
                 last_history_datetime != self.prev_history_datetime:
@@ -305,14 +305,14 @@ class CalorieHistoryFrame(tk.Frame):
 
                     # Translate date to epoch seconds
                     epoch_time = time.mktime(time.strptime(i[0], "%Y-%m-%d"))
-                    print(epoch_time)
+                    # print(epoch_time)
                     # Update database, which isn't used in the GUI, but can be accessed for additional
                     # analysis or graphing.
                     self.calories_in_out_db.execute(
                         "INSERT INTO CaloriesInOut (rec_date, epoch_time, CaloriesIn, CaloriesOut) values(?, ?, ?, ?)"
                         , [i[0], epoch_time, i[2], i[3]])
 
-                    print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
+                    # print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
 
                 self.calories_in_out_db.commit()
 

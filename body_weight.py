@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 from datetime import datetime
 import pathlib
 from PIL import Image, ImageTk
-import matplotlib.dates as dates
+import bathroom_scale_if
 
 # importing the required module
 import matplotlib
@@ -13,9 +14,6 @@ import matplotlib.pyplot as plt
 import logging
 
 logger = logging.getLogger("scaleLogger")
-
-import bathroom_scale_if
-
 mod_path = pathlib.Path(__file__).parent
 
 # Need to use this if no interactive window.
@@ -134,8 +132,15 @@ class WeightHistoryFrame(tk.Frame):
             # print(self.weight)
             # print(db_id, date, user, weight)
 
+            # Confirm the user wants to delete the record.
+            confirm = messagebox.askyesno(title='Confirm Deletion',
+                                          message=f'Delete Selected Record {date[:10]} {weight}kg?')
+
             # Delete the selected item from the database
-            self.bathroom_scale_if.delete_entry(db_id)
+            if confirm == True:
+                self.bathroom_scale_if.delete_entry(db_id)
+            else:
+                print("Did not delete recourd")
 
     # Create the tree view object.
     def create_weight_history_tree(self, history_tree_frame):
@@ -160,7 +165,7 @@ class WeightHistoryFrame(tk.Frame):
 
         self.history_tree.heading('Date', text="Date")
         self.history_tree.heading('User', text="User")
-        self.history_tree.heading('Weight', text="'Weight")
+        self.history_tree.heading('Weight', text="Weight")
 
         self.history_tree.grid(column=0, row=0)
         sb = ttk.Scrollbar(history_tree_frame, orient=tk.VERTICAL)
@@ -177,9 +182,9 @@ class WeightHistoryFrame(tk.Frame):
 
         # print(weight_history)
 
-        # Plot the last 2 weeks
+        # Plot the last 6 months
         if self.last_weight_history is None or self.last_weight_history != weight_history:
-            weight_plotter = WeightHistoryPlotter(90)
+            weight_plotter = WeightHistoryPlotter(180)
             weight_plotter.plot_save(weight_history, 94, 80, 'weight_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("fixedsys", 12), background='light grey')
