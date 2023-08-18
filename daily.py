@@ -443,6 +443,7 @@ class MealFrame(tk.Frame):
                     logger.info(f'Meal History Add -->weight {weight}g protein {tot_protein}g, fat {tot_fat}g, '
                                 f'carbs {tot_cho}g, chol {tot_chol}g, sugar {tot_sug}g, aoacfib {tot_aoacfib}')
 
+                    # TODO: Add Saturated FAT to the meal history.
                     ret = self.meal_history_db_con.execute(
                         'INSERT INTO MealHistory (unix_ms, Date, fooddata_db_id, FoodName,'
                         'PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB, KCALS, WEIGHT) '
