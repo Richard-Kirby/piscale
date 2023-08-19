@@ -67,6 +67,9 @@ class WeightHistoryPlotter:
         # naming the y axis
         matplotlib.pyplot.ylabel('Body Weight')
 
+        # Turn on the grid.
+        matplotlib.pyplot.grid(True, linestyle=':')
+
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
 
@@ -96,7 +99,7 @@ class HistoryGrapher(tk.Frame):
         img = ImageTk.PhotoImage(Image.open('weight_history_graph.jpg'))
         self.graph_label.configure(image=img)
         self.graph_label.image = img
-        self.after(60 * 1000 * 1, self.update_graph)  # Update after 13 minutes
+        self.after(60 * 1000 * 13, self.update_graph)  # Update after 13 minutes
 
 
 # Class to create the Weight History

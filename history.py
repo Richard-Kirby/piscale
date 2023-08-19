@@ -77,6 +77,9 @@ class CalorieHistoryPlotter:
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
 
+        # Turn the grid on.
+        matplotlib.pyplot.grid(True, axis ='y', linestyle=':', color ='g')
+
         # naming the y axis
         matplotlib.pyplot.ylabel('Calorie History', )
         matplotlib.pyplot.ylim(0, 3000)
