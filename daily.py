@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)
 mod_path = pathlib.Path(__file__).parent
 favorite_radio_sel = None
 
+
 # FoodDataFrame Contains all the food data from the database and the search mechanism.
 class FoodDataFrame(tk.Frame):
     def __init__(self, frame, weight):
@@ -82,7 +83,7 @@ class FoodDataFrame(tk.Frame):
         self.food_tree_view.heading('Fave', text="Fave")
         self.food_tree_view.grid(column=0, row=0)
 
-        sb = ttk.Scrollbar(food_data_tree_frame, orient=tk.VERTICAL)
+        sb = ttk.Scrollbar(food_data_tree_frame, orient=tk.VERTICAL, style="wide_scroll.Vertical.TScrollbar")
         sb.grid(column=1, row=0, sticky='nsew')
 
         self.food_tree_view.config(yscrollcommand=sb.set)
@@ -278,9 +279,9 @@ class MealFrame(tk.Frame):
         self.meal_tree_view = ttk.Treeview(meal_frame,
                                            columns=('db_id', 'FoodCode', 'FoodName', 'Weight', 'kCal'),
                                            show='headings', height=6)
-        self.meal_tree_view.column('FoodName', anchor=tk.CENTER, width=160)
-        self.meal_tree_view.column('Weight', anchor=tk.CENTER, width=50)
-        self.meal_tree_view.column('kCal', anchor=tk.CENTER, width=50)
+        self.meal_tree_view.column('FoodName', anchor=tk.W, width=150)
+        self.meal_tree_view.column('Weight', anchor=tk.E, width=40)
+        self.meal_tree_view.column('kCal', anchor=tk.E, width=40)
         self.meal_tree_view["displaycolumns"] = ('FoodName', 'Weight', 'kCal')
 
         self.meal_tree_view.heading('FoodName', text="Food Name")
@@ -307,7 +308,7 @@ class MealFrame(tk.Frame):
 
         self.calorie_history_view["displaycolumns"] = ('Time', 'kCal')
 
-        self.calorie_history_view.column('Time', anchor=tk.CENTER, width=180)
+        self.calorie_history_view.column('Time', anchor=tk.W, width=150)
         self.calorie_history_view.column('kCal', anchor=tk.E, width=80)
 
         self.calorie_history_view.heading('Time', text="Time")

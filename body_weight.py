@@ -50,9 +50,9 @@ class WeightHistoryPlotter:
         # Bar Plot
 
         plt.axhline(y=start_weight, linewidth=1, color='r')
-        plt.axhline(y=target_weight, linewidth=1, color='y')
+        plt.axhline(y=target_weight, linewidth=1, color='g')
 
-        ax.plot(x_data, y_data, 'bx')
+        ax.plot(x_data, y_data, 'b.')
 
         # xfmt = dates.DateFormatter('%d-%m-%y')
         # ax.xaxis.set_major_formatter(xfmt)
@@ -185,7 +185,7 @@ class WeightHistoryFrame(tk.Frame):
         # Plot the last 6 months
         if self.last_weight_history is None or self.last_weight_history != weight_history:
             weight_plotter = WeightHistoryPlotter(180)
-            weight_plotter.plot_save(weight_history, 94, 80, 'weight_history_graph.jpg')
+            weight_plotter.plot_save(weight_history, 94, 75, 'weight_history_graph.jpg')
 
         self.history_tree.tag_configure('odd', font=("fixedsys", 12), background='light grey')
         self.history_tree.tag_configure('even', font=("fixedsys", 12))

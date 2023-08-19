@@ -3,13 +3,9 @@
 import sys
 import tkinter as tk
 from tkinter import ttk
-import time
-from datetime import datetime
-import sqlite3 as sq
 import pathlib
 from PIL import Image, ImageTk
-import subprocess
-import cProfile
+
 
 # HX711 library for the scale interface.
 import HX711 as HX
@@ -97,7 +93,12 @@ class App(tk.Frame):
         style.configure('Treeview', rowheight=20)
         style.map("Treeview")
 
+        # Configures a specialist scrollbar for windows that have a lot of scrolling. Inherits from Vertical.TScrolbar
+        # duet to naming convention.
+        style.configure("wide_scroll.Vertical.TScrollbar", arrowsize=24)
+
         style.configure('TNotebook.Tab', font=config.widget_font)
+        #style.configure("Vertical.TScrollbar", arrowsize=24)
         notebook.add(daily_frame, text='Daily')
         notebook.add(history_frame, text='History')
         notebook.add(body_weight_frame, text='Weight')
