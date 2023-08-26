@@ -400,7 +400,8 @@ class MealFrame(tk.Frame):
             print(fooddata_db_id, foodcode, foodname, weight, calories)
 
             if fooddata_db_id != 0:
-                logger.debug(f"Food data being gathered for {fooddata_db_id}")
+                logger.debug(f"Food data being gathered for {fooddata_db_id} {fooddata_db_id}, {foodcode}, {foodname}, "
+                             f"{weight}, {calories})")
                 part_data = self.food_data_db_con.execute(
                     "SELECT id, FoodCode, FoodName, PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB FROM FoodData WHERE id = ?",
                     (fooddata_db_id,))
@@ -410,7 +411,7 @@ class MealFrame(tk.Frame):
                     data_id, foodcode, foodname, protein, fat, cho, chol, totsug, aoacfib = data
                     # print(id, foodcode, foodname, protein, fat, cho, chol, totsug, aoacfib)
 
-                    weight = float(self.weight.get_weight())
+                    weight = float(weight)
                     if protein != 'N' and protein != 'Tr' and protein != '':
                         tot_protein = protein * weight / 100
                     else:

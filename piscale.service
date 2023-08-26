@@ -12,4 +12,4 @@ TimeoutSec=infinity
 WorkingDirectory=/home/kirbypi/piscale
 
 [Install]
-WantedBy=graphical.target
+WantedBy=default.target
