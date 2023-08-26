@@ -52,7 +52,7 @@ class WeightHistoryPlotter:
         plt.axhline(y=start_weight, linewidth=1, color='r')
         plt.axhline(y=target_weight, linewidth=1, color='g')
 
-        ax.plot(x_data, y_data, 'b.')
+        ax.plot(x_data, y_data, 'b-')
 
         # xfmt = dates.DateFormatter('%d-%m-%y')
         # ax.xaxis.set_major_formatter(xfmt)
