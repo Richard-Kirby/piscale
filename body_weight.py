@@ -12,6 +12,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import logging
+import configparser
 
 logger = logging.getLogger("scaleLogger")
 mod_path = pathlib.Path(__file__).parent
@@ -49,10 +50,10 @@ class WeightHistoryPlotter:
 
         # Bar Plot
 
-        plt.axhline(y=start_weight, linewidth=1, color='r')
-        plt.axhline(y=target_weight, linewidth=1, color='g')
+        plt.axhline(y=start_weight, linewidth=1, color='r', zorder=0)
+        plt.axhline(y=target_weight, linewidth=1, color='g', zorder=0)
 
-        ax.plot(x_data, y_data, 'b-')
+        ax.plot(x_data, y_data, '-', color = '#1E90FF' )
 
         # xfmt = dates.DateFormatter('%d-%m-%y')
         # ax.xaxis.set_major_formatter(xfmt)
@@ -104,11 +105,12 @@ class HistoryGrapher(tk.Frame):
 
 # Class to create the Weight History
 class WeightHistoryFrame(tk.Frame):
-    def __init__(self, frame):
+    def __init__(self, frame, num_of_measurement_points):
         tk.Frame.__init__(self, frame)
 
         self.history_tree = None
         self.frame = frame
+        self.num_of_measurement_points = num_of_measurement_points
 
         # Create the Food Data Tree
         history_tree_frame = tk.Frame(self.frame)
@@ -187,8 +189,9 @@ class WeightHistoryFrame(tk.Frame):
 
         # Plot the last 6 months
         if self.last_weight_history is None or self.last_weight_history != weight_history:
-            weight_plotter = WeightHistoryPlotter(180)
+            weight_plotter = WeightHistoryPlotter(self.num_of_measurement_points)
             weight_plotter.plot_save(weight_history, 94, 75, 'weight_history_graph.jpg')
+            #weight_plotter.plot_weight(weight_history, 94, 75)
 
         self.history_tree.tag_configure('odd', font=("fixedsys", 12), background='light grey')
         self.history_tree.tag_configure('even', font=("fixedsys", 12))
@@ -217,12 +220,16 @@ class BodyWeightFrame:
     def __init__(self, frame):
         self.master_frame = frame
 
+        config = configparser.ConfigParser()
+        config.read('piscale.ini')
+
         # There are two frames - table of weight history and a graph of that data.
         self.weight_history_frame = tk.Frame(self.master_frame)
         self.graph_frame = tk.Frame(self.master_frame)
 
         # Object for the Weight History.
-        self.weight_history = WeightHistoryFrame(self.weight_history_frame)
+        self.weight_history = WeightHistoryFrame(self.weight_history_frame,
+                                                 int(config['body_weight']['measurement_points']))
         self.weight_history.populate_history()
 
         history_grapher = HistoryGrapher(self.graph_frame)

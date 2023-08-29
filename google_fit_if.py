@@ -20,6 +20,7 @@ import threading
 import logging
 from socket import gaierror
 
+
 logger = logging.getLogger("scaleLogger")
 
 from oauth2client import client
@@ -262,9 +263,9 @@ class GoogleFitIf(threading.Thread):
 
                     calories = float(item['value'][0]['fpVal'])
 
-                    logger.info(f"{start_day_days_since_epoch} {end_day_days_since_epoch} "
-                                f"diff_days_end_start {diff_days_end_start} "
-                                f"/Start/End/Calories {start_time_s} {end_time_s}/{calories}")
+                    #logger.info(f"{start_day_days_since_epoch} {end_day_days_since_epoch} "
+                    #            f"diff_days_end_start {diff_days_end_start} "
+                    #            f"/Start/End/Calories {start_time_s} {end_time_s}/{calories}")
 
                     # Split calories if crosses between date if the record spans a date.
 

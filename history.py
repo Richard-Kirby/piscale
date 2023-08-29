@@ -6,6 +6,7 @@ import sqlite3 as sq
 import pathlib
 import numpy
 from PIL import Image, ImageTk
+import configparser
 
 # importing the required module
 import matplotlib
@@ -39,33 +40,46 @@ class CalorieHistoryPlotter:
         x_data = []
         y_consumed_data = []
         y_expended_data = []
+        y_moving_average_in = []
+        y_moving_average_out = []
+
 
         for i in range(len(calorie_history)):
             x_data.append(calorie_history[i][1])
             y_consumed_data.append(calorie_history[i][2])
             y_expended_data.append(round(calorie_history[i][3]))
+            y_moving_average_in.append(round(calorie_history[i][4]))
+            y_moving_average_out.append(round(calorie_history[i][5]))
 
         # print(x_data, y_consumed_data)
+        plt.style.use('dark_background')
 
         # Set up the plot
         fig, ax = plt.subplots(figsize=(6.25, 4))
 
         # Bar Plot
 
-        # plt.axhline(y=maintain, linewidth=1, color='r')
-        # plt.axhline(y=slow_loss, linewidth=1, color='y')
-        # plt.axhline(y=fast_loss, linewidth=1, color='g')
-
         # ax.plot(x_data, y_data)
-        width = 0.35
+        width = 0.40
 
         x = numpy.arange(len(x_data))  # the label locations
         # print(x)
 
-        bar_graph1 = ax.bar(x - width / 2, y_consumed_data, width, label='kCal In')
-        bar_graph2 = ax.bar(x + width / 2, y_expended_data, width, label='kCal Out')
-        ax.bar_label(bar_graph1, rotation='vertical', padding=3)
-        ax.bar_label(bar_graph2, rotation='vertical', padding=3)
+        # Turn the grid on.
+        #matplotlib.pyplot.grid(True, axis ='y', linestyle=':', color ='0.8')
+
+        bar_graph1 = ax.bar(x - width / 2, y_consumed_data, width, label='kCal In', color='#000000',
+                            edgecolor='#23A2DC', zorder =0)
+        bar_graph2 = ax.bar(x + width / 2, y_expended_data, width, label='kCal Out', color='#000000',
+                            edgecolor='#DC5D23', zorder =0)
+
+        #plt.plot(x, y_consumed_data)
+        #plt.plot(x, y_expended_data)
+        plt.plot(x, y_moving_average_in, label='kCal Moving Avg In', linewidth=3, color='#46DC23', zorder =5)
+        plt.plot(x, y_moving_average_out, label='kCal Moving Avg Out', linewidth=3, color='#B923DC', zorder =5)
+
+        ax.bar_label(bar_graph1, rotation='vertical', padding=3, color = 'w', zorder =10)
+        ax.bar_label(bar_graph2, rotation='vertical', padding=3, color = 'w', zorder =10)
 
         ax.legend(loc='lower left')
         ax.set_xticks(x, x_data)
@@ -76,9 +90,6 @@ class CalorieHistoryPlotter:
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
-
-        # Turn the grid on.
-        matplotlib.pyplot.grid(True, axis ='y', linestyle=':', color ='g')
 
         # naming the y axis
         matplotlib.pyplot.ylabel('Calorie History', )
@@ -118,12 +129,13 @@ class HistoryGrapher(tk.Frame):
 
 # Class to create the Calorie History
 class CalorieHistoryFrame(tk.Frame):
-    def __init__(self, db_con, frame, google_fit_if):
+    def __init__(self, db_con, frame, moving_averge_days, google_fit_if):
         tk.Frame.__init__(self, frame)
 
         self.history_tree = None
         self.history_db_con = db_con
         self.frame = frame
+        self.moving_average_days = int(moving_averge_days)
 
         # Set up reference to the Google Fit Interface, which has the data of spent calories.
         self.google_fit_if = google_fit_if
@@ -165,7 +177,10 @@ class CalorieHistoryFrame(tk.Frame):
                         rec_date TEXT,
                         epoch_time TEXT, 
                         CaloriesIn INTEGER,
-                        CaloriesOut INTEGER);
+                        CaloriesOut INTEGER, 
+                        CaloriesInMovingAverage INTEGER,
+                        CaloriesOutMovingAverage INTEGER
+                        );
                     """)
 
     # Create the tree view object.
@@ -280,49 +295,96 @@ class CalorieHistoryFrame(tk.Frame):
             # calorie_history.sort(key = self.history_sort())
 
             if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
-                # print("updating graph")
 
-                self.calorie_plotter.plot_save(sorted_data, 'calorie_history_graph.jpg')
+                self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='light grey')
+                self.history_tree.tag_configure('even', font=("fixedsys", 9))
 
-            self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='light grey')
-            self.history_tree.tag_configure('even', font=("fixedsys", 9))
+                index = 0
 
-            index = 0
+                with self.calories_in_out_db:
 
-            with self.calories_in_out_db:
+                    # Delete all the records in the DB - it will be repopulated below.
+                    self.calories_in_out_db.execute("DELETE FROM CaloriesInOut;")
 
-                # Delete all the records in the DB - it will be repopulated below.
-                self.calories_in_out_db.execute("DELETE FROM CaloriesInOut;")
+                    moving_average_kcals_in_list = []
+                    moving_average_kcals_in = 0
 
-                for i in sorted_data:
-                    insert_data = [0, i[1], 0, i[2], i[3]]
-                    if index % 2:
-                        self.history_tree.insert(parent='', index=index,
-                                                 values=insert_data,
-                                                 tags='even')
-                    else:
-                        self.history_tree.insert(parent='', index=index,
-                                                 values=insert_data,
-                                                 tags='odd')
-                    index = index + 1
+                    moving_average_kcals_out_list = []
+                    moving_average_kcals_out = 0
 
-                    # Translate date to epoch seconds
-                    epoch_time = time.mktime(time.strptime(i[0], "%Y-%m-%d"))
-                    # print(epoch_time)
-                    # Update database, which isn't used in the GUI, but can be accessed for additional
-                    # analysis or graphing.
-                    self.calories_in_out_db.execute(
-                        "INSERT INTO CaloriesInOut (rec_date, epoch_time, CaloriesIn, CaloriesOut) values(?, ?, ?, ?)"
-                        , [i[0], epoch_time, i[2], i[3]])
+                    # Create the table for viewing and also create the temporary database of in/out/moving averages.
+                    for i in sorted_data:
+                        insert_data = [0, i[1], 0, i[2], i[3]]
 
-                    # print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
+                        # Building up the table.
+                        if index % 2:
+                            self.history_tree.insert(parent='', index=index,
+                                                     values=insert_data,
+                                                     tags='even')
+                        else:
+                            self.history_tree.insert(parent='', index=index,
+                                                     values=insert_data,
+                                                     tags='odd')
+                        index = index + 1
 
-                self.calories_in_out_db.commit()
+                        # Calculate the moving average by changing the window under consideration and dividing by the
+                        # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
+                        # any values.
+                        if i[2] > 0:
+                            length = len(moving_average_kcals_in_list)
+                            if length  == self.moving_average_days:
+                                moving_average_kcals_in_list.pop(0)
+                                moving_average_kcals_in_list.append(i[2])
+                            else:
+                                moving_average_kcals_in_list.append(i[2])
+                                length = len(moving_average_kcals_in_list)
 
-            # Set up previous values that will be compared against.
-            self.last_calorie_history = calorie_history
-            self.prev_history_datetime = last_history_datetime
-            self.prev_expended_datetime = last_calorie_expended_datetime
+                            if length > 0:
+                                moving_average_kcals_in = int(sum(moving_average_kcals_in_list)/length)
+
+                            # print(f"{length} {moving_average_kcals_in} {moving_average_kcals_in_list}")
+
+                        # Calculate the moving average by changing the window under consideration and dividing by the
+                        # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
+                        # any values.
+                        if i[3] > 0:
+                            length = len(moving_average_kcals_out_list)
+                            if length  == self.moving_average_days:
+                                moving_average_kcals_out_list.pop(0)
+                                moving_average_kcals_out_list.append(i[3])
+                            else:
+                                moving_average_kcals_out_list.append(i[3])
+                                length = len(moving_average_kcals_out_list)
+
+                            if length > 0:
+                                moving_average_kcals_out = int(sum(moving_average_kcals_out_list)/length)
+
+                            # print(f"{length} {moving_average_kcals_out} {moving_average_kcals_out_list}")
+                        i.append(moving_average_kcals_in)
+                        i.append(moving_average_kcals_out)
+
+                        # Translate date to epoch seconds
+                        epoch_time = time.mktime(time.strptime(i[0], "%Y-%m-%d"))
+                        # print(epoch_time)
+                        # Update database, which isn't used in the GUI, but can be accessed for additional
+                        # analysis or graphing.
+                        self.calories_in_out_db.execute(
+                            "INSERT INTO CaloriesInOut (rec_date, epoch_time, CaloriesIn, CaloriesOut, "
+                            "CaloriesInMovingAverage, CaloriesOutMovingAverage) values(?, ?, ?, ?, ?, ?)"
+                            , [i[0], epoch_time, i[2], i[3], moving_average_kcals_in, moving_average_kcals_out])
+
+                        # print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
+
+                    self.calories_in_out_db.commit()
+
+                    # print(f"{sorted_data}")
+
+                    self.calorie_plotter.plot_save(sorted_data, 'calorie_history_graph.jpg')
+
+                # Set up previous values that will be compared against.
+                self.last_calorie_history = calorie_history
+                self.prev_history_datetime = last_history_datetime
+                self.prev_expended_datetime = last_calorie_expended_datetime
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
         self.after(60 * 1000 * 7,
@@ -335,6 +397,9 @@ class HistoryFrame:
     def __init__(self, frame, google_fit_if):
         self.master_frame = frame
 
+        config = configparser.ConfigParser()
+        config.read('piscale.ini')
+
         # history_label = tk.Label(self.master_frame, text="History", fg="Black", font=("Helvetica", 15))
         # Connection into the history data
         self.history_db_con = sq.connect(f'{mod_path}/history.db')
@@ -344,7 +409,8 @@ class HistoryFrame:
         self.graph_frame = tk.Frame(self.master_frame)
 
         # Object for the Calorie History.
-        self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame, google_fit_if)
+        self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame,
+                                                   int(config['calorie_history']['moving_average_days']), google_fit_if)
         self.calorie_history.populate_history()
 
         history_grapher = HistoryGrapher(self.graph_frame)
