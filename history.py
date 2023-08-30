@@ -12,10 +12,11 @@ import configparser
 import matplotlib
 import matplotlib.pyplot as plt
 
-import logging
+import logging.config
 
-logger = logging.getLogger("scaleLogger")
-logger.setLevel(logging.INFO)
+logging.config.fileConfig('logging.conf')
+hlogger = logging.getLogger('historyLogger')
+hlogger.setLevel(logging.DEBUG)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -226,7 +227,7 @@ class CalorieHistoryFrame(tk.Frame):
 
         # Only update the history information if it has changed. See if it changed by checking he last records
         # against what was previously processed.
-        logger.info(f"Previous data {last_history_datetime} {self.prev_history_datetime}"
+        hlogger.info(f"Previous data {last_history_datetime} {self.prev_history_datetime}"
                     f"{last_calorie_expended_datetime} {self.prev_expended_datetime}")
 
         # Only update the history information if it has changed. See if it changed by checking he last records
@@ -237,7 +238,7 @@ class CalorieHistoryFrame(tk.Frame):
         if last_calorie_expended_datetime != self.prev_expended_datetime or \
                 last_history_datetime != self.prev_history_datetime:
 
-            logger.info(f"Updating history table {last_history_datetime} {self.prev_history_datetime}"
+            hlogger.info(f"Updating history table {last_history_datetime} {self.prev_history_datetime}"
                         f"{last_calorie_expended_datetime} {self.prev_expended_datetime}")
 
             self.history_tree.delete(*self.history_tree.get_children())
@@ -274,8 +275,8 @@ class CalorieHistoryFrame(tk.Frame):
                 if day_date in calorie_history.keys():
                     calorie_history[day_date]['calories expended'] = calorie_history[day_date]['calories expended'] \
                                                                      + item[5]
-                    logger.debug(f"Building Calories Expended {day_date} {item[5]} "
-                                 f"{calorie_history[day_date]['calories expended']}")
+                    #hlogger.debug(f"Building Calories Expended {day_date} {item[5]} "
+                    #             f"{calorie_history[day_date]['calories expended']}")
                 else:
                     history_rec = {'date': date, 'calories consumed': 0, 'calories expended': item[5]}
                     # print(history_rec)
@@ -283,6 +284,7 @@ class CalorieHistoryFrame(tk.Frame):
 
             # Sorting is needed as out of order records may have been added.
             sorted_data = []
+
             # Build X/Y data
             for key in calorie_history:
                 record = [calorie_history[key]['date'], key, calorie_history[key]['calories consumed'],
@@ -291,103 +293,105 @@ class CalorieHistoryFrame(tk.Frame):
                 sorted_data.append(record)
             sorted_data.sort()
 
+            hlogger.info(f"Sorted Data {sorted_data} processing")
+
             # Plot the last 2 weeks
             # calorie_history.sort(key = self.history_sort())
 
-            if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
+            # if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
 
-                self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='light grey')
-                self.history_tree.tag_configure('even', font=("fixedsys", 9))
+            self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='light grey')
+            self.history_tree.tag_configure('even', font=("fixedsys", 9))
 
-                index = 0
+            index = 0
 
-                with self.calories_in_out_db:
+            with self.calories_in_out_db:
 
-                    # Delete all the records in the DB - it will be repopulated below.
-                    self.calories_in_out_db.execute("DELETE FROM CaloriesInOut;")
+                # Delete all the records in the DB - it will be repopulated below.
+                self.calories_in_out_db.execute("DELETE FROM CaloriesInOut;")
 
-                    moving_average_kcals_in_list = []
-                    moving_average_kcals_in = 0
+                moving_average_kcals_in_list = []
+                moving_average_kcals_in = 0
 
-                    moving_average_kcals_out_list = []
-                    moving_average_kcals_out = 0
+                moving_average_kcals_out_list = []
+                moving_average_kcals_out = 0
 
-                    # Create the table for viewing and also create the temporary database of in/out/moving averages.
-                    for i in sorted_data:
-                        insert_data = [0, i[1], 0, i[2], i[3]]
+                # Create the table for viewing and also create the temporary database of in/out/moving averages.
+                for i in sorted_data:
+                    insert_data = [0, i[1], 0, i[2], i[3]]
 
-                        # Building up the table.
-                        if index % 2:
-                            self.history_tree.insert(parent='', index=index,
-                                                     values=insert_data,
-                                                     tags='even')
+                    # Building up the table.
+                    if index % 2:
+                        self.history_tree.insert(parent='', index=index,
+                                                 values=insert_data,
+                                                 tags='even')
+                    else:
+                        self.history_tree.insert(parent='', index=index,
+                                                 values=insert_data,
+                                                 tags='odd')
+                    index = index + 1
+
+                    # Calculate the moving average by changing the window under consideration and dividing by the
+                    # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
+                    # any values.
+                    if i[2] > 0:
+                        length = len(moving_average_kcals_in_list)
+                        if length  == self.moving_average_days:
+                            moving_average_kcals_in_list.pop(0)
+                            moving_average_kcals_in_list.append(i[2])
                         else:
-                            self.history_tree.insert(parent='', index=index,
-                                                     values=insert_data,
-                                                     tags='odd')
-                        index = index + 1
-
-                        # Calculate the moving average by changing the window under consideration and dividing by the
-                        # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
-                        # any values.
-                        if i[2] > 0:
+                            moving_average_kcals_in_list.append(i[2])
                             length = len(moving_average_kcals_in_list)
-                            if length  == self.moving_average_days:
-                                moving_average_kcals_in_list.pop(0)
-                                moving_average_kcals_in_list.append(i[2])
-                            else:
-                                moving_average_kcals_in_list.append(i[2])
-                                length = len(moving_average_kcals_in_list)
 
-                            if length > 0:
-                                moving_average_kcals_in = int(sum(moving_average_kcals_in_list)/length)
+                        if length > 0:
+                            moving_average_kcals_in = int(sum(moving_average_kcals_in_list)/length)
 
-                            # print(f"{length} {moving_average_kcals_in} {moving_average_kcals_in_list}")
+                        # print(f"{length} {moving_average_kcals_in} {moving_average_kcals_in_list}")
 
-                        # Calculate the moving average by changing the window under consideration and dividing by the
-                        # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
-                        # any values.
-                        if i[3] > 0:
+                    # Calculate the moving average by changing the window under consideration and dividing by the
+                    # length of the window. 0 calorie days are ignored as they may occur if user hasn't entered
+                    # any values.
+                    if i[3] > 0:
+                        length = len(moving_average_kcals_out_list)
+                        if length  == self.moving_average_days:
+                            moving_average_kcals_out_list.pop(0)
+                            moving_average_kcals_out_list.append(i[3])
+                        else:
+                            moving_average_kcals_out_list.append(i[3])
                             length = len(moving_average_kcals_out_list)
-                            if length  == self.moving_average_days:
-                                moving_average_kcals_out_list.pop(0)
-                                moving_average_kcals_out_list.append(i[3])
-                            else:
-                                moving_average_kcals_out_list.append(i[3])
-                                length = len(moving_average_kcals_out_list)
 
-                            if length > 0:
-                                moving_average_kcals_out = int(sum(moving_average_kcals_out_list)/length)
+                        if length > 0:
+                            moving_average_kcals_out = int(sum(moving_average_kcals_out_list)/length)
 
-                            # print(f"{length} {moving_average_kcals_out} {moving_average_kcals_out_list}")
-                        i.append(moving_average_kcals_in)
-                        i.append(moving_average_kcals_out)
+                        # print(f"{length} {moving_average_kcals_out} {moving_average_kcals_out_list}")
+                    i.append(moving_average_kcals_in)
+                    i.append(moving_average_kcals_out)
 
-                        # Translate date to epoch seconds
-                        epoch_time = time.mktime(time.strptime(i[0], "%Y-%m-%d"))
-                        # print(epoch_time)
-                        # Update database, which isn't used in the GUI, but can be accessed for additional
-                        # analysis or graphing.
-                        self.calories_in_out_db.execute(
-                            "INSERT INTO CaloriesInOut (rec_date, epoch_time, CaloriesIn, CaloriesOut, "
-                            "CaloriesInMovingAverage, CaloriesOutMovingAverage) values(?, ?, ?, ?, ?, ?)"
-                            , [i[0], epoch_time, i[2], i[3], moving_average_kcals_in, moving_average_kcals_out])
+                    # Translate date to epoch seconds
+                    epoch_time = time.mktime(time.strptime(i[0], "%Y-%m-%d"))
+                    # print(epoch_time)
+                    # Update database, which isn't used in the GUI, but can be accessed for additional
+                    # analysis or graphing.
+                    self.calories_in_out_db.execute(
+                        "INSERT INTO CaloriesInOut (rec_date, epoch_time, CaloriesIn, CaloriesOut, "
+                        "CaloriesInMovingAverage, CaloriesOutMovingAverage) values(?, ?, ?, ?, ?, ?)"
+                        , [i[0], epoch_time, i[2], i[3], moving_average_kcals_in, moving_average_kcals_out])
 
-                        # print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
+                    # print(f"{self.calories_in_out_db} {i[0]} {i[1]} {i[2]} {i[3]}")
 
-                    self.calories_in_out_db.commit()
+                self.calories_in_out_db.commit()
 
-                    # print(f"{sorted_data}")
+                # print(f"{sorted_data}")
 
-                    self.calorie_plotter.plot_save(sorted_data, 'calorie_history_graph.jpg')
+                self.calorie_plotter.plot_save(sorted_data, 'calorie_history_graph.jpg')
 
-                # Set up previous values that will be compared against.
-                self.last_calorie_history = calorie_history
-                self.prev_history_datetime = last_history_datetime
-                self.prev_expended_datetime = last_calorie_expended_datetime
+            # Set up previous values that will be compared against.
+            # self.last_calorie_history = calorie_history
+            self.prev_history_datetime = last_history_datetime
+            self.prev_expended_datetime = last_calorie_expended_datetime
 
         # self.todays_calories_value_label.configure(text = (f"{self.todays_calories:.0f} kCal"))
-        self.after(60 * 1000 * 7,
+        self.after(60 * 1000 * 3,
                    self.populate_history)  # Update every 7 minutes - to ensure the day change gets included
 
 

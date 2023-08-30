@@ -14,7 +14,9 @@ import matplotlib.pyplot as plt
 import logging
 import configparser
 
-logger = logging.getLogger("scaleLogger")
+logging.config.fileConfig('logging.conf')
+blogger = logging.getLogger("body_weightLogger")
+
 mod_path = pathlib.Path(__file__).parent
 
 # Need to use this if no interactive window.
@@ -50,10 +52,10 @@ class WeightHistoryPlotter:
 
         # Bar Plot
 
-        plt.axhline(y=start_weight, linewidth=1, color='r', zorder=0)
-        plt.axhline(y=target_weight, linewidth=1, color='g', zorder=0)
+        plt.axhline(y=start_weight, linewidth=1, color='r', zorder=5)
+        plt.axhline(y=target_weight, linewidth=1, color='g', zorder=5)
 
-        ax.plot(x_data, y_data, '-', color = '#1E90FF' )
+        ax.plot(x_data, y_data, '-', color = '#1E90FF', zorder = 10)
 
         # xfmt = dates.DateFormatter('%d-%m-%y')
         # ax.xaxis.set_major_formatter(xfmt)
@@ -69,7 +71,7 @@ class WeightHistoryPlotter:
         matplotlib.pyplot.ylabel('Body Weight')
 
         # Turn on the grid.
-        matplotlib.pyplot.grid(True, linestyle=':')
+        matplotlib.pyplot.grid(True, linestyle=':', zorder=5)
 
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
@@ -238,4 +240,4 @@ class BodyWeightFrame:
         self.weight_history_frame.grid(column=0, row=0)
         self.graph_frame.grid(column=1, row=0)
 
-        logger.info("Body Weight Handling")
+        blogger.info("Body Weight Handling")

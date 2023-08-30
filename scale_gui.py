@@ -5,11 +5,19 @@ import tkinter as tk
 from tkinter import ttk
 import pathlib
 from PIL import Image, ImageTk
-
+import cProfile
 
 # HX711 library for the scale interface.
 import HX711 as HX
 
+# Import the history frame classes
+import history
+
+# Import the Body Weight classes
+import body_weight
+import google_fit_if
+import daily
+import config  # some globals to use.
 import logging.config
 
 logging.config.fileConfig('logging.conf')
@@ -17,16 +25,7 @@ logging.config.fileConfig('logging.conf')
 # create logger
 logger = logging.getLogger('scaleLogger')
 logger.setLevel(logging.DEBUG)
-
-# Import the history frame classes
-import history
-import daily
-
-# Import the Body Weight classes
-import body_weight
-import google_fit_if
-import daily
-import config  # some globals to use.
+print(logger.handlers)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -163,7 +162,8 @@ class App(tk.Frame):
 
 root = tk.Tk()
 
-app = App(root)
+
+cProfile.run('app = App(root)', 'piscale_profile.log')
 root.wm_title("Piscale Calorie Minder - a Richard Kirby project")
 logger.info("Start Up GUI")
 

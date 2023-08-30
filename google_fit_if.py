@@ -13,18 +13,18 @@ __author__ = "richard.james.kirby@gmailcom Richard Kirby"
 import sys
 import time
 import datetime
-import json
 import sqlite3 as sql
 import pathlib
 import threading
-import logging
+import logging.config
 from socket import gaierror
-
-
-logger = logging.getLogger("scaleLogger")
 
 from oauth2client import client
 from googleapiclient import sample_tools
+
+logging.config.fileConfig('logging.conf')
+glogger = logging.getLogger('googleif_Logger')
+glogger.setLevel(logging.DEBUG)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -100,7 +100,7 @@ class GoogleFitIf(threading.Thread):
     def run(self):
 
 
-        logger.info("Google If run() function start")
+        glogger.info(f"{__name__} Google If run() function start")
         while(True):
 
             # Get today's date for a later query.
@@ -149,14 +149,14 @@ class GoogleFitIf(threading.Thread):
             # Commit to finalise the deletions.
             self.calories_spent_db.commit()
 
-            logger.info(f"Number of records deleted from today EndDate {today} {del_cursor.rowcount} "
+            glogger.info(f"Number of records deleted from today EndDate {today} {del_cursor.rowcount} "
                         f"and last two {del_last_record_cursor1.rowcount + del_last_record_cursor2.rowcount}")
 
             # Get the new last record in the database (after deleting everything from today)
             last_record = self.calories_spent_db.execute(
                 "SELECT * FROM CaloriesSpent ORDER BY id DESC LIMIT 1").fetchone()
 
-            # logger.info(f"fetch one **{last_record.fetchone()}")
+            # glogger.info(f"fetch one **{last_record.fetchone()}")
 
             # Get the start time based on the last record's End Time in nanoseconds. It is the 3rd field in the record.
             # If no records, then the default start time will be used as per the __init__.
@@ -168,7 +168,7 @@ class GoogleFitIf(threading.Thread):
 
             end_time_ns = time.time_ns()
 
-            logger.info(f"Using start time/end time as "
+            glogger.info(f"Using start time/end time as "
                         f"{self.start_time} {datetime.datetime.fromtimestamp(int(self.start_time)/1000000000)} / "
                         f"{end_time_ns} {datetime.datetime.fromtimestamp(int(end_time_ns/1000000000))}")
 
@@ -178,7 +178,7 @@ class GoogleFitIf(threading.Thread):
             try:
                 calories_expended = None
 
-                logger.info(f"Setting up Google IF. Data Set {data_set}")
+                glogger.info(f"Setting up Google IF. Data Set {data_set}")
                 # Authenticate and construct service.
                 self.service, self.flags = sample_tools.init(
                     self.argv,
@@ -189,7 +189,7 @@ class GoogleFitIf(threading.Thread):
                     scope="https://www.googleapis.com/auth/fitness.activity.read",
                 )
 
-                logger.info(f"Service {self.service} Flags {self.flags}")
+                glogger.info(f"Service {self.service} Flags {self.flags}")
 
                 '''
                 data_sources = self.service.users().dataSources().list(userId='me').execute()
@@ -217,24 +217,24 @@ class GoogleFitIf(threading.Thread):
 
             # Exception Handler for all issues, not just Token Refreshes
             except client.AccessTokenRefreshError:
-                logger.error(
+                glogger.error(
                     "Problem getting the data. It might be The credentials have been revoked or expired, please re-run"
                     "the application to re-authorize. May also be some other issue - read the response from Google."
                 )
 
             except gaierror as err:
-                logger.error(f"Socket gai error raised - try to keep working {err=}, {type(err)=}")
+                glogger.error(f"Socket gai error raised - try to keep working {err=}, {type(err)=}")
 
             # Generic Exception Handler. Just continue on, hoping that it is temporary.
             except Exception as err:
-                logger.error(f"Unexpected {err=}, {type(err)=}")
+                glogger.error(f"Unexpected {err=}, {type(err)=}")
 
             except:
-                logger.error("unprocessed exception")
+                glogger.error("unprocessed exception")
 
             calorie_records =[]
 
-            logger.info(f"Calories Expended {calories_expended}")
+            glogger.info(f"Calories Expended {calories_expended}")
 
             # Go through all the records of all calories expended via exercise or just breathing, etc.
             # Note that the calories expended is often empty.
@@ -263,7 +263,7 @@ class GoogleFitIf(threading.Thread):
 
                     calories = float(item['value'][0]['fpVal'])
 
-                    #logger.info(f"{start_day_days_since_epoch} {end_day_days_since_epoch} "
+                    #glogger.info(f"{start_day_days_since_epoch} {end_day_days_since_epoch} "
                     #            f"diff_days_end_start {diff_days_end_start} "
                     #            f"/Start/End/Calories {start_time_s} {end_time_s}/{calories}")
 
@@ -273,7 +273,7 @@ class GoogleFitIf(threading.Thread):
                         # Calculate how long between start time and the end of its day.
                         start_time_to_day_end = 24 * 60 * 60 - (start_time_s % (24 * 60 * 60))
 
-                        logger.info(f"start_time_to_day_end {start_time_to_day_end}")
+                        glogger.info(f"start_time_to_day_end {start_time_to_day_end}")
 
                         # Split calories according to num of seconds in the time range. Ratio will be the time
                         # between the end of the start day and the end of its day and the whole range.
@@ -298,7 +298,7 @@ class GoogleFitIf(threading.Thread):
                                                 end, calories_day2]
 
                         calorie_records.append(calories_record_day2)
-                        logger.info(f"calories_record_day1 {calories_record_day1} "
+                        glogger.info(f"calories_record_day1 {calories_record_day1} "
                                     f"calories_record_day2 {calories_record_day2}")
 
                     else: # Otherwise the calories don't have to be spread across 2 days, so just assign to the day.
@@ -314,10 +314,10 @@ class GoogleFitIf(threading.Thread):
                             "INSERT INTO CaloriesSpent (StartNs, EndNs, StartDateTime, EndDateTime, Calories) values(?, ?, ?, ?, ?)"
                             , [record[0], record[1], record[2], record[3], record[4]])
                         self.start_time = record[1]
-                        logger.info(record)
+                        glogger.info(record)
 
             # Wait to avoid too much interaction with Google
-            time.sleep(60*3)
+            time.sleep(60*13)
 
 
 if __name__ == "__main__":
