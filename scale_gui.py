@@ -58,11 +58,15 @@ class Weight:
     def get_weight(self):
         return self.weight
 
-
-class App(tk.Frame):
+# Main Application for the Scale GUI
+class App(ttk.Frame):
     def __init__(self, master=None):
 
-        tk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master)
+
+        style = ttk.Style()
+        style.theme_use("awdark")
+
         self.selected_item_cal_label = None
         self.weight = Weight()
 
@@ -71,25 +75,30 @@ class App(tk.Frame):
         self.old_weight = None
 
         # Update the weight, which will happen regularly after this call.
-        self.weight_disp = tk.Label(text="", fg="Red", font=("Helvetica", 30))
+        style.configure('piscale.TLabel', font=('Helvetica', 10))
+        style.configure('piscale_weight.TLabel', font=('Helvetica', 20))
+
+        self.weight_disp = ttk.Label(text="", style='piscale_weight.TLabel')
+
         self.weight.update_weight()
 
         # Notebook creation
-        notebook = ttk.Notebook(root)
+        notebook = ttk.Notebook()
         notebook.pack(expand=True)
 
         # create frames
-        daily_frame = tk.Frame(notebook)
-        history_frame = tk.Frame(notebook)
-        body_weight_frame = tk.Frame(notebook)
+        daily_frame = ttk.Frame(notebook)
+        history_frame = ttk.Frame(notebook)
+        body_weight_frame = ttk.Frame(notebook)
 
         daily_frame.grid(column=0, row=0)
 
-        style = ttk.Style()
-        # print(style.theme_names())
-        style.theme_use("alt")
+        # print(f"{style.theme_names()}")
         style.configure('Treeview', rowheight=20)
         style.map("Treeview")
+
+        style.configure('piscale.TButton', font=('Helvetica', 12))
+
 
         # Configures a specialist scrollbar for windows that have a lot of scrolling. Inherits from Vertical.TScrolbar
         # duet to naming convention.
@@ -103,12 +112,12 @@ class App(tk.Frame):
         notebook.grid(column=0, row=1, columnspan=4, pady=0)
 
         # Widgets that are part of the main application
-        zero_btn = tk.Button(self.master, text="Zero", command=self.weight.zero, font=config.widget_font, width=5)
-        exit_btn = tk.Button(self.master, text="Exit", command=self.exit, font=config.widget_font, width=5)
+        zero_btn = ttk.Button(self.master, text="Zero", command=self.weight.zero, style = 'piscale.TButton', width=5)
+        exit_btn = ttk.Button(self.master, text="Exit", command=self.exit, style = 'piscale.TButton', width=5)
 
         logo_img = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/logo-no-background.png').resize((280, 40)))
         # logo_img = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/logo-no-background.png'))
-        logo = tk.Label(self.master, image=logo_img)
+        logo = ttk.Label(self.master, image=logo_img)
         logo.grid(column=2, row=0, sticky='sw')
         logo.image = logo_img
 
@@ -157,10 +166,18 @@ class App(tk.Frame):
     def exit():
         quit()
 
+
 root = tk.Tk()
 
+root.tk.call('lappend', 'auto_path', f'{mod_path}/themes/awthemes-10.4.0')
+root.tk.call('package', 'require', 'awdark')
+
+#root.winfo_rgb()
+
+style = ttk.Style().theme_use("awdark")
+
 # cProfile.run('app = App(root)', 'piscale_profile.log')
-app = App(root)
+app = App(master = root)
 root.wm_title("Piscale Calorie Minder - a Richard Kirby project")
 logger.info("Start Up GUI")
 

@@ -111,11 +111,11 @@ class CalorieHistoryPlotter:
 
 
 # Class to manage the updating of the history graph.
-class HistoryGrapher(tk.Frame):
+class HistoryGrapher(ttk.Frame):
     def __init__(self, frame):
-        tk.Frame.__init__(self, frame)
+        ttk.Frame.__init__(self, frame)
         img = ImageTk.PhotoImage(Image.open('calorie_history_graph.jpg'))
-        self.graph_label = tk.Label(frame, image=img)
+        self.graph_label = ttk.Label(frame, image=img)
         self.graph_label.image = img
         self.graph_label.grid(column=0, row=0)
         # self.update_graph()
@@ -129,9 +129,9 @@ class HistoryGrapher(tk.Frame):
 
 
 # Class to create the Calorie History
-class CalorieHistoryFrame(tk.Frame):
+class CalorieHistoryFrame(ttk.Frame):
     def __init__(self, db_con, frame, moving_averge_days, google_fit_if):
-        tk.Frame.__init__(self, frame)
+        ttk.Frame.__init__(self, frame)
 
         self.history_tree = None
         self.history_db_con = db_con
@@ -141,11 +141,11 @@ class CalorieHistoryFrame(tk.Frame):
         # Set up reference to the Google Fit Interface, which has the data of spent calories.
         self.google_fit_if = google_fit_if
 
-        temp_label = tk.Label(self.frame, text="Temp", fg="Black", font=("Helvetica", 15))
+        temp_label = ttk.Label(self.frame, text="Temp", style = 'piscale.TButton')
         temp_label.grid(column=0, row=0)
 
         # Create the Food Data Tree
-        history_tree_frame = tk.Frame(self.frame)
+        history_tree_frame = ttk.Frame(self.frame)
         self.create_calorie_history_tree(history_tree_frame)
         history_tree_frame.grid(column=0, row=0)
         self.last_calorie_history = None
@@ -300,7 +300,7 @@ class CalorieHistoryFrame(tk.Frame):
 
             # if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
 
-            self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='light grey')
+            self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='gray30')
             self.history_tree.tag_configure('even', font=("fixedsys", 9))
 
             index = 0
@@ -409,8 +409,8 @@ class HistoryFrame:
         self.history_db_con = sq.connect(f'{mod_path}/history.db')
 
         # There are two frames - table of calorie history and a graph of that data.
-        self.calorie_history_frame = tk.Frame(self.master_frame)
-        self.graph_frame = tk.Frame(self.master_frame)
+        self.calorie_history_frame = ttk.Frame(self.master_frame)
+        self.graph_frame = ttk.Frame(self.master_frame)
 
         # Object for the Calorie History.
         self.calorie_history = CalorieHistoryFrame(self.history_db_con, self.calorie_history_frame,

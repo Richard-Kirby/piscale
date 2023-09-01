@@ -120,7 +120,7 @@ class WeightHistoryFrame(tk.Frame):
         history_tree_frame.grid(column=0, row=0)
         self.last_weight_history = None
 
-        delete_btn = tk.Button(self.master, text="Del", command=self.del_entry, font=("Helvetica", 15), width=5)
+        delete_btn = ttk.Button(self.master, text="Del", command=self.del_entry, style='piscale.TButton', width=5)
         delete_btn.grid(column=0, row=1)
 
         self.bathroom_scale_if = bathroom_scale_if.BathroomScaleIF(bathroom_scale_if_ip_port)
@@ -195,17 +195,17 @@ class WeightHistoryFrame(tk.Frame):
             weight_plotter.plot_save(weight_history, 94, 75, 'weight_history_graph.jpg')
             #weight_plotter.plot_weight(weight_history, 94, 75)
 
-        self.history_tree.tag_configure('odd', font=("fixedsys", 12), background='light grey')
-        self.history_tree.tag_configure('even', font=("fixedsys", 12))
+        self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='gray30')
+        self.history_tree.tag_configure('even', font=("fixedsys", 9))
 
         index = 0
 
         for record in weight_history:
             if index % 2:
-                self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], record[1][:11], record[2], record[3]),
                                          tags='even')
             else:
-                self.history_tree.insert(parent='', index=index, values=(record[0], record[1], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], record[1][:11], record[2], record[3]),
                                          tags='odd')
             index = index + 1
 
@@ -226,8 +226,8 @@ class BodyWeightFrame:
         config.read('piscale.ini')
 
         # There are two frames - table of weight history and a graph of that data.
-        self.weight_history_frame = tk.Frame(self.master_frame)
-        self.graph_frame = tk.Frame(self.master_frame)
+        self.weight_history_frame = ttk.Frame(self.master_frame)
+        self.graph_frame = ttk.Frame(self.master_frame)
 
         # Object for the Weight History.
         self.weight_history = WeightHistoryFrame(self.weight_history_frame,

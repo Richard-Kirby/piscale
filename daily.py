@@ -18,9 +18,9 @@ favorite_radio_sel = None
 
 
 # FoodDataFrame Contains all the food data from the database and the search mechanism.
-class FoodDataFrame(tk.Frame):
+class FoodDataFrame(ttk.Frame):
     def __init__(self, frame, weight):
-        tk.Frame.__init__(self, frame)
+        ttk.Frame.__init__(self, frame)
 
         dlogger.info(f"Startup {__name__}")
 
@@ -32,14 +32,14 @@ class FoodDataFrame(tk.Frame):
         self.food_data_db_con = sq.connect(f'{mod_path}/food_data.db')
 
         # Create the Food Data Tree
-        self.food_data_tree_frame = tk.Frame(self.main_food_frame)
+        self.food_data_tree_frame = ttk.Frame(self.main_food_frame)
         self.create_food_data_tree(self.food_data_tree_frame)
 
         # Keyboard icon preparation
         kb_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/keyboard.png').resize((32, 32)))
         # Button that opens an onscreen keyboard
-        self.keyb_button = tk.Button(self.main_food_frame, image=kb_image, command=self.keyb, font=config.widget_font,
-                                     width=60)
+        self.keyb_button = ttk.Button(self.main_food_frame, image=kb_image, command=self.keyb, style= 'piscale.TButton',
+                                      width=50)
         self.keyb_button.image = kb_image
 
         # Search entry box
@@ -51,7 +51,7 @@ class FoodDataFrame(tk.Frame):
         )
 
         # Calculates and displays the calorie content of the selected itme given the weight.
-        self.selected_item_cal_label = tk.Label(self.main_food_frame, text="Selected")  # , font=("Helvetica", 11))
+        self.selected_item_cal_label = ttk.Label(self.main_food_frame, text="Selected")  # , font=("Helvetica", 11))
 
         # Call to the update calories for the selected item. Should update once in a while after that.
         self.update_item_calories()
@@ -73,7 +73,7 @@ class FoodDataFrame(tk.Frame):
         # List of food and their characteristics.
         self.food_tree_view = ttk.Treeview(food_data_tree_frame,
                                            columns=('db_id', 'FoodCode', 'FoodName', 'kCal', 'Fave'),
-                                           show='headings', height=16)
+                                           show='headings', height=15)
 
         self.food_tree_view["displaycolumns"] = ('FoodName', 'kCal')
         self.food_tree_view.column('FoodName', anchor=tk.W, width=380)
@@ -128,10 +128,10 @@ class FoodDataFrame(tk.Frame):
                     "SELECT id, FoodCode, FoodName, KCALS, Favourite FROM FoodData"
                     " WHERE Favourite=1")
 
-        self.food_tree_view.tag_configure('odd', font=config.data_font, background='light grey')
+        self.food_tree_view.tag_configure('odd', font=config.data_font, background='gray30')
         self.food_tree_view.tag_configure('even', font=config.data_font)
-        self.food_tree_view.tag_configure('odd_fave', font=config.data_font, foreground='red', background='light grey')
-        self.food_tree_view.tag_configure('even_fave', font=config.data_font, foreground='red')
+        self.food_tree_view.tag_configure('odd_fave', font=config.data_font, foreground='IndianRed1', background='gray30')
+        self.food_tree_view.tag_configure('even_fave', font=config.data_font, foreground='IndianRed1')
 
         # TODO: Can't get images to work with the tree view.
         # small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
@@ -185,9 +185,9 @@ class FoodDataFrame(tk.Frame):
 
 # Meal Frame includes the meal frame, which has all the components of meals, the history frame that
 # has the history, which shows today's meals and total calories for the day.
-class MealFrame(tk.Frame):
+class MealFrame(ttk.Frame):
     def __init__(self, meal_frame, weight):
-        tk.Frame.__init__(self, meal_frame)
+        ttk.Frame.__init__(self, meal_frame)
 
         self.weight = weight
         # Create a connection to the history database.
@@ -199,7 +199,7 @@ class MealFrame(tk.Frame):
         self.meal_tree_view = None
         self.todays_calories = None
         self.calorie_history_view = None
-        meal_tree_frame = tk.Frame(meal_frame)
+        meal_tree_frame = ttk.Frame(meal_frame)
         self.create_meal_tree(meal_tree_frame)
 
         # Entry box Food Name for adhoc meal
@@ -216,11 +216,11 @@ class MealFrame(tk.Frame):
         self.adhoc_meal_kcal_box = ttk.Entry(
             meal_frame,
             textvariable=self.adhoc_meal_kcal,
-            font=config.data_font, width=6
+            font=config.data_font, width=4
         )
         self.adhoc_meal_kcal_box.grid(column=1, row=0)
 
-        self.adhoc_meal_btn = tk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, font=config.widget_font,
+        self.adhoc_meal_btn = ttk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, style = 'piscale.TButton',
                                         width=3)
         self.adhoc_meal_btn.grid(column=2, row=0)
 
@@ -235,10 +235,10 @@ class MealFrame(tk.Frame):
         self.adhoc_meal_box.grid(column=0, row=0)
 
         # Today's calorie counts.
-        todays_calories_label = tk.Label(meal_frame, text="Today's kCal", font=config.data_font)
-        self.todays_calories_value_label = tk.Label(meal_frame, text="0", fg="red", font=config.data_font)
+        todays_calories_label = ttk.Label(meal_frame, text="Today's kCal", style='piscale.TLabel')
+        self.todays_calories_value_label = ttk.Label(meal_frame, text="0", style='piscale.TLabel')
 
-        calorie_history_frame = tk.Frame(meal_frame)
+        calorie_history_frame = ttk.Frame(meal_frame)
 
         # Create the Calorie History Tree
         self.create_calorie_history_tree(calorie_history_frame)
@@ -246,16 +246,16 @@ class MealFrame(tk.Frame):
         # Intialise the mawl to 0 caories.
         self.meal_total_calories = 0
 
-        meal_kcal_label = tk.Label(meal_frame, text="Meal kCal", font=config.data_font)
-        self.meal_kcal_display = tk.Label(meal_frame, text="0", fg="Red", font=config.data_font)
+        meal_kcal_label = ttk.Label(meal_frame, text="Meal kCal", style='piscale.TLabel')
+        self.meal_kcal_display = ttk.Label(meal_frame, text="0", style='piscale.TLabel')
 
         add_to_history_image = ImageTk.PhotoImage(Image.open
                                                   (f'{mod_path}/images/8665197_circle_arrow_down_icon.png')
                                                   .resize((32, 32)))
 
         # This button moves a meal to history.
-        add_to_history_button = tk.Button(meal_frame, image=add_to_history_image,
-                                          command=self.add_to_history, width=40)
+        add_to_history_button = ttk.Button(meal_frame, image=add_to_history_image,
+                                          command=self.add_to_history, style = 'piscale.TButton', width=40)
 
         add_to_history_button.image = add_to_history_image
 
@@ -358,7 +358,7 @@ class MealFrame(tk.Frame):
                 history_data = self.history_db_con.execute("SELECT id, Date, KCALS, Weight FROM History"
                                                            " WHERE Date LIKE ?", (search_date,))
 
-        self.calorie_history_view.tag_configure('odd', font=config.data_font, background='light grey')
+        self.calorie_history_view.tag_configure('odd', font=config.data_font, background='gray30')
         self.calorie_history_view.tag_configure('even', font=config.data_font)
 
         index = 0
@@ -487,13 +487,13 @@ class DailyFrame:
 
         small_fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
-        self.inter_frame = tk.Frame(self.daily_frame)
+        self.inter_frame = ttk.Frame(self.daily_frame)
 
-        fave_radio = tk.Radiobutton(self.inter_frame,
+        fave_radio = ttk.Radiobutton(self.inter_frame,
                                     image=small_fave_image,
                                     variable=favorite_radio_sel,
                                     command=self.radio_sel,
-                                    value=0, font=config.widget_font)
+                                    value=0)
 
         fave_radio.image = small_fave_image
 
@@ -501,7 +501,7 @@ class DailyFrame:
                                        (f'{mod_path}/images/6541614_logo_overflow_stack_stackoverflow_icon.png')
                                        .resize((32, 32)))
 
-        all_radio = tk.Radiobutton(self.inter_frame,
+        all_radio = ttk.Radiobutton(self.inter_frame,
                                    image=all_image,
                                    variable=favorite_radio_sel,
                                    command=self.radio_sel,
@@ -512,8 +512,8 @@ class DailyFrame:
         add_to_meal_image = ImageTk.PhotoImage(Image.open(
             f'{mod_path}/images/8665198_circle_arrow_right_icon.png').resize((32, 32)))
 
-        add_to_meal_btn = tk.Button(self.inter_frame, image=add_to_meal_image, command=self.add_to_meal,
-                                    width=50)
+        add_to_meal_btn = ttk.Button(self.inter_frame, image=add_to_meal_image, command=self.add_to_meal,
+                                    width=32)
 
         add_to_meal_btn.image = add_to_meal_image
 
@@ -521,16 +521,16 @@ class DailyFrame:
             f'{mod_path}/images/8665200_circle_arrow_left_icon.png').resize((32, 32)))
 
         # Button to Remove something from the meal.
-        remove_from_meal_btn = tk.Button(self.inter_frame, image=remove_from_meal_image,
-                                         command=self.remove_from_meal, width=50)
+        remove_from_meal_btn = ttk.Button(self.inter_frame, image=remove_from_meal_image,
+                                         command=self.remove_from_meal, width=32)
 
         remove_from_meal_btn.image = remove_from_meal_image
 
         # Favorite Toggle Icon and Button
-        fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((48, 48)))
+        fave_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/fave.png').resize((32, 32)))
 
-        toggle_favourite_btn = tk.Button(self.inter_frame, image=fave_image,  # text='Fav',
-                                         command=self.toggle_favourite, font=config.widget_font, width=50)
+        toggle_favourite_btn = ttk.Button(self.inter_frame, image=fave_image,  # text='Fav',
+                                         command=self.toggle_favourite,  width=32)
         toggle_favourite_btn.image = fave_image
 
         fave_radio.grid(column=0, row=0, sticky='nw')
@@ -587,8 +587,8 @@ class DailyFrame:
         self.daily_frame.columnconfigure(2, weight=4)
 
         # Create the other necessary frame objects.
-        food_data_frame = tk.Frame(self.daily_frame)
-        meal_frame = tk.Frame(self.daily_frame)
+        food_data_frame = ttk.Frame(self.daily_frame)
+        meal_frame = ttk.Frame(self.daily_frame)
 
         # Create the right hand frame for dealing with the meals.
         self.food_data_frame = FoodDataFrame(food_data_frame, self.weight)
@@ -603,25 +603,27 @@ class DailyFrame:
     # Add an item to the meal calculating total meal calories.
     def add_to_meal(self):
         selected = self.food_data_frame.food_tree_view.selection()
-        chosenfood = self.food_data_frame.food_tree_view.item(selected[0])
-        # print(chosenfood)
-        db_id, food_code, food_name, kcalories_per_100, fave = chosenfood["values"]
-        # print(self.weight)
-        food_weight = self.weight.get_weight()
-        # print(food_name, calories_per_100)
-        food_calories = float(kcalories_per_100) * food_weight / 100
-        if food_calories < 0:
-            food_calories = 0
+        print(selected)
+        if selected != ():
+            chosenfood = self.food_data_frame.food_tree_view.item(selected[0])
+            # print(chosenfood)
+            db_id, food_code, food_name, kcalories_per_100, fave = chosenfood["values"]
+            # print(self.weight)
+            food_weight = self.weight.get_weight()
+            # print(food_name, calories_per_100)
+            food_calories = float(kcalories_per_100) * food_weight / 100
+            if food_calories < 0:
+                food_calories = 0
 
-        # Add the food item to the end of the meal list.
-        self.meal_frame.meal_tree_view.insert(parent='', index=tk.END, values=(db_id, food_code, food_name, food_weight,
-                                                                               f"{food_calories:.0f}"))
+            # Add the food item to the end of the meal list.
+            self.meal_frame.meal_tree_view.insert(parent='', index=tk.END, values=(db_id, food_code, food_name, food_weight,
+                                                                                   f"{food_calories:.0f}"))
 
-        self.meal_frame.meal_total_calories = self.meal_frame.meal_total_calories + food_calories
-        self.meal_frame.update_meal_calories()
+            self.meal_frame.meal_total_calories = self.meal_frame.meal_total_calories + food_calories
+            self.meal_frame.update_meal_calories()
 
-        # Zero out the scale, so it is ready for additional food
-        self.weight.zero()
+            # Zero out the scale, so it is ready for additional food
+            self.weight.zero()
 
     # Remove an item from the meal
     def remove_from_meal(self):
