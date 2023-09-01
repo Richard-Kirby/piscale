@@ -25,7 +25,6 @@ logging.config.fileConfig('logging.conf')
 # create logger
 logger = logging.getLogger('scaleLogger')
 logger.setLevel(logging.DEBUG)
-print(logger.handlers)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -69,7 +68,7 @@ class App(tk.Frame):
 
         self.master = master
         # Initialise the old weight. Old weight is used to determine if display update is needed.
-        self.old_weight_display = None
+        self.old_weight = None
 
         # Update the weight, which will happen regularly after this call.
         self.weight_disp = tk.Label(text="", fg="Red", font=("Helvetica", 30))
@@ -142,28 +141,26 @@ class App(tk.Frame):
     def update_weight_display(self):
 
         self.weight.update_weight()
-        weight_display = f"{float(self.weight.get_weight()):03.0f}g"
+        curr_weight = self.weight.get_weight()
 
         # Update the weight display only if it has changed.
-        if self.old_weight_display is None or weight_display != self.old_weight_display:
-            logger.debug(f"Updating weight display {weight_display}")
+        if self.old_weight is None or abs(self.old_weight - curr_weight) > 2.0:
+            weight_display = f"{float(curr_weight):03.0f}g"
+            logger.debug(f"Updating weight display {weight_display} used to be {self.old_weight}")
             self.weight_disp.configure(text=weight_display)
-            self.old_weight_display = weight_display
+            self.old_weight = curr_weight
 
-        self.after(500, self.update_weight_display)
-
+        self.after(600, self.update_weight_display)
 
     # Exit function
     @staticmethod
     def exit():
         quit()
 
-
-
 root = tk.Tk()
 
-
-cProfile.run('app = App(root)', 'piscale_profile.log')
+# cProfile.run('app = App(root)', 'piscale_profile.log')
+app = App(root)
 root.wm_title("Piscale Calorie Minder - a Richard Kirby project")
 logger.info("Start Up GUI")
 

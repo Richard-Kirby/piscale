@@ -23,8 +23,9 @@ from oauth2client import client
 from googleapiclient import sample_tools
 
 logging.config.fileConfig('logging.conf')
-glogger = logging.getLogger('googleif_Logger')
+glogger = logging.getLogger('googleifLogger')
 glogger.setLevel(logging.DEBUG)
+print(glogger)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -32,6 +33,8 @@ mod_path = pathlib.Path(__file__).parent
 class GoogleFitIf(threading.Thread):
     def __init__(self, argv):
         threading.Thread.__init__(self)
+
+        glogger.info(f"{__name__} Google If __init__")
 
         # Default start time, beginning of Oct 2022.
         self.start_time = "1664582400000000000"

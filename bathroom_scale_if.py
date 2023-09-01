@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 
 import logging
 
-logger = logging.getLogger('scaleLogger')
+bathlogger = logging.getLogger('bathLogger')
+bathlogger.setLevel(logging.DEBUG)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -16,6 +17,8 @@ mod_path = pathlib.Path(__file__).parent
 class BathroomScaleIF(threading.Thread):
     def __init__(self, udp_ip_port):
         threading.Thread.__init__(self)
+
+        bathlogger.debug(f"Startup {__name__}")
 
         self.sock = socket.socket(socket.AF_INET,  # Internet
                                   socket.SOCK_DGRAM)  # UDP
@@ -79,7 +82,7 @@ class BathroomScaleIF(threading.Thread):
                 if time_diff > timedelta(minutes=1):
                     print("new measurement")
                     last_msg_received_time = now
-                    print(f"received message:{now}, {data}, {result}, {weight}")
+                    bathlogger.debug(f"received message:{now}, {data}, {result}, {weight}")
 
                     with self.body_weight_db:
                         # Add to body weight history

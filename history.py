@@ -16,7 +16,7 @@ import logging.config
 
 logging.config.fileConfig('logging.conf')
 hlogger = logging.getLogger('historyLogger')
-hlogger.setLevel(logging.DEBUG)
+hlogger.setLevel(logging.INFO)
 
 mod_path = pathlib.Path(__file__).parent
 
@@ -293,7 +293,7 @@ class CalorieHistoryFrame(tk.Frame):
                 sorted_data.append(record)
             sorted_data.sort()
 
-            hlogger.info(f"Sorted Data {sorted_data} processing")
+            hlogger.debug(f"Sorted Data {sorted_data} processing")
 
             # Plot the last 2 weeks
             # calorie_history.sort(key = self.history_sort())

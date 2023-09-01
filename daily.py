@@ -10,8 +10,8 @@ import config
 
 import logging
 
-logger = logging.getLogger("scaleLogger")
-logger.setLevel(logging.INFO)
+dlogger = logging.getLogger("dailyLogger")
+dlogger.setLevel(logging.INFO)
 
 mod_path = pathlib.Path(__file__).parent
 favorite_radio_sel = None
@@ -21,6 +21,8 @@ favorite_radio_sel = None
 class FoodDataFrame(tk.Frame):
     def __init__(self, frame, weight):
         tk.Frame.__init__(self, frame)
+
+        dlogger.info(f"Startup {__name__}")
 
         self.weight = weight
 
@@ -400,7 +402,7 @@ class MealFrame(tk.Frame):
             print(fooddata_db_id, foodcode, foodname, weight, calories)
 
             if fooddata_db_id != 0:
-                logger.debug(f"Food data being gathered for {fooddata_db_id} {fooddata_db_id}, {foodcode}, {foodname}, "
+                dlogger.debug(f"Food data being gathered for {fooddata_db_id} {fooddata_db_id}, {foodcode}, {foodname}, "
                              f"{weight}, {calories})")
                 part_data = self.food_data_db_con.execute(
                     "SELECT id, FoodCode, FoodName, PROT, FAT, CHO, CHOL, TOTSUG, AOACFIB FROM FoodData WHERE id = ?",
@@ -442,7 +444,7 @@ class MealFrame(tk.Frame):
                     else:
                         tot_aoacfib = 0
 
-                    logger.info(f'Meal History Add -->weight {weight}g protein {tot_protein}g, fat {tot_fat}g, '
+                    dlogger.info(f'Meal History Add -->weight {weight}g protein {tot_protein}g, fat {tot_fat}g, '
                                 f'carbs {tot_cho}g, chol {tot_chol}g, sugar {tot_sug}g, aoacfib {tot_aoacfib}')
 
                     # TODO: Add Saturated FAT to the meal history.
@@ -453,7 +455,7 @@ class MealFrame(tk.Frame):
                         [now_micro, now, fooddata_db_id, foodname,
                          tot_protein, tot_fat, tot_cho, tot_chol,
                          tot_sug, tot_aoacfib, calories, weight])
-                    logger.info(f'sql return {ret}')
+                    dlogger.info(f'sql return {ret}')
                     self.meal_history_db_con.commit()
 
         if self.meal_total_calories != 0:
