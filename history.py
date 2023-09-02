@@ -253,7 +253,7 @@ class CalorieHistoryFrame(ttk.Frame):
             for item in history_data:
                 date = datetime.strptime(item[1][:10], "%Y-%m-%d").strftime('%Y-%m-%d')
 
-                day_date = datetime.strptime(item[1][:10], "%Y-%m-%d").strftime('%a %d %b')
+                day_date = datetime.strptime(item[1][:10], "%Y-%m-%d").strftime('%a %d/%m/%y')
 
                 # print(calorie_history.keys())
                 if day_date in calorie_history.keys():
@@ -270,7 +270,7 @@ class CalorieHistoryFrame(ttk.Frame):
             for item in calories_expended:
                 # print(item)
                 date = datetime.strptime(item[3][:10], '%Y-%m-%d').strftime('%Y-%m-%d')
-                day_date = datetime.strptime(item[3][:10], '%Y-%m-%d').strftime('%a %d %b')
+                day_date = datetime.strptime(item[3][:10], '%Y-%m-%d').strftime('%a %d/%m/%y')
 
                 if day_date in calorie_history.keys():
                     calorie_history[day_date]['calories expended'] = calorie_history[day_date]['calories expended'] \
@@ -300,8 +300,8 @@ class CalorieHistoryFrame(ttk.Frame):
 
             # if self.last_calorie_history is None or self.last_calorie_history != calorie_history:
 
-            self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='gray30')
-            self.history_tree.tag_configure('even', font=("fixedsys", 9))
+            self.history_tree.tag_configure('odd', font=("fixedsys", 8), background='gray30')
+            self.history_tree.tag_configure('even', font=("fixedsys", 8))
 
             index = 0
 

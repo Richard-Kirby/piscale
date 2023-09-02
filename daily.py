@@ -36,10 +36,10 @@ class FoodDataFrame(ttk.Frame):
         self.create_food_data_tree(self.food_data_tree_frame)
 
         # Keyboard icon preparation
-        kb_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/keyboard.png').resize((32, 32)))
+        kb_image = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/keyboard_dark.png').resize((24, 24)))
         # Button that opens an onscreen keyboard
         self.keyb_button = ttk.Button(self.main_food_frame, image=kb_image, command=self.keyb, style= 'piscale.TButton',
-                                      width=50)
+                                      width=60)
         self.keyb_button.image = kb_image
 
         # Search entry box
@@ -73,7 +73,7 @@ class FoodDataFrame(ttk.Frame):
         # List of food and their characteristics.
         self.food_tree_view = ttk.Treeview(food_data_tree_frame,
                                            columns=('db_id', 'FoodCode', 'FoodName', 'kCal', 'Fave'),
-                                           show='headings', height=15)
+                                           show='headings', height=16)
 
         self.food_tree_view["displaycolumns"] = ('FoodName', 'kCal')
         self.food_tree_view.column('FoodName', anchor=tk.W, width=380)
@@ -221,7 +221,7 @@ class MealFrame(ttk.Frame):
         self.adhoc_meal_kcal_box.grid(column=1, row=0)
 
         self.adhoc_meal_btn = ttk.Button(meal_frame, text="Adhoc", command=self.adhoc_meal, style = 'piscale.TButton',
-                                        width=3)
+                                        width=6)
         self.adhoc_meal_btn.grid(column=2, row=0)
 
         # Entry box Food Name for adhoc meal
@@ -249,9 +249,8 @@ class MealFrame(ttk.Frame):
         meal_kcal_label = ttk.Label(meal_frame, text="Meal kCal", style='piscale.TLabel')
         self.meal_kcal_display = ttk.Label(meal_frame, text="0", style='piscale.TLabel')
 
-        add_to_history_image = ImageTk.PhotoImage(Image.open
-                                                  (f'{mod_path}/images/8665197_circle_arrow_down_icon.png')
-                                                  .resize((32, 32)))
+        image = Image.open(f'{mod_path}/images/right-arrow.png').resize((32, 32))
+        add_to_history_image = ImageTk.PhotoImage(image.rotate(270))
 
         # This button moves a meal to history.
         add_to_history_button = ttk.Button(meal_frame, image=add_to_history_image,
@@ -510,15 +509,15 @@ class DailyFrame:
         all_radio.image = all_image
 
         add_to_meal_image = ImageTk.PhotoImage(Image.open(
-            f'{mod_path}/images/8665198_circle_arrow_right_icon.png').resize((32, 32)))
+            f'{mod_path}/images/right-arrow.png').resize((32, 32)))
 
         add_to_meal_btn = ttk.Button(self.inter_frame, image=add_to_meal_image, command=self.add_to_meal,
                                     width=32)
 
         add_to_meal_btn.image = add_to_meal_image
 
-        remove_from_meal_image = ImageTk.PhotoImage(Image.open(
-            f'{mod_path}/images/8665200_circle_arrow_left_icon.png').resize((32, 32)))
+        image = Image.open(f'{mod_path}/images/right-arrow.png').resize((32, 32))
+        remove_from_meal_image = ImageTk.PhotoImage(image.rotate(180))
 
         # Button to Remove something from the meal.
         remove_from_meal_btn = ttk.Button(self.inter_frame, image=remove_from_meal_image,

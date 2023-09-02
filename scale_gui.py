@@ -62,15 +62,19 @@ class Weight:
 class App(ttk.Frame):
     def __init__(self, master=None):
 
-        ttk.Frame.__init__(self, master)
-
         style = ttk.Style()
         style.theme_use("awdark")
+
+        ttk.Frame.__init__(self, master)
 
         self.selected_item_cal_label = None
         self.weight = Weight()
 
         self.master = master
+
+        main_frame = ttk.Frame()
+
+
         # Initialise the old weight. Old weight is used to determine if display update is needed.
         self.old_weight = None
 
@@ -78,12 +82,12 @@ class App(ttk.Frame):
         style.configure('piscale.TLabel', font=('Helvetica', 10))
         style.configure('piscale_weight.TLabel', font=('Helvetica', 20))
 
-        self.weight_disp = ttk.Label(text="", style='piscale_weight.TLabel')
+        self.weight_disp = ttk.Label(main_frame, text="", style='piscale_weight.TLabel')
 
         self.weight.update_weight()
 
         # Notebook creation
-        notebook = ttk.Notebook()
+        notebook = ttk.Notebook(main_frame)
         notebook.pack(expand=True)
 
         # create frames
@@ -105,6 +109,7 @@ class App(ttk.Frame):
         style.configure("wide_scroll.Vertical.TScrollbar", arrowsize=24)
 
         style.configure('TNotebook.Tab', font=config.widget_font)
+
         #style.configure("Vertical.TScrollbar", arrowsize=24)
         notebook.add(daily_frame, text='Daily')
         notebook.add(history_frame, text='History')
@@ -112,12 +117,12 @@ class App(ttk.Frame):
         notebook.grid(column=0, row=1, columnspan=4, pady=0)
 
         # Widgets that are part of the main application
-        zero_btn = ttk.Button(self.master, text="Zero", command=self.weight.zero, style = 'piscale.TButton', width=5)
-        exit_btn = ttk.Button(self.master, text="Exit", command=self.exit, style = 'piscale.TButton', width=5)
+        zero_btn = ttk.Button(main_frame, text="Zero", command=self.weight.zero, style = 'piscale.TButton', width=5)
+        exit_btn = ttk.Button(main_frame, text="Exit", command=self.exit, style = 'piscale.TButton', width=5)
 
         logo_img = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/logo-no-background.png').resize((280, 40)))
         # logo_img = ImageTk.PhotoImage(Image.open(f'{mod_path}/images/logo-no-background.png'))
-        logo = ttk.Label(self.master, image=logo_img)
+        logo = ttk.Label(main_frame, image=logo_img)
         logo.grid(column=2, row=0, sticky='sw')
         logo.image = logo_img
 
@@ -125,6 +130,8 @@ class App(ttk.Frame):
         zero_btn.grid(column=1, row=0, sticky='w')
         # self.time_label.grid(column=2, row=0, sticky='e')
         exit_btn.grid(column=3, row=0, sticky='e')
+
+        main_frame.grid(column=0, row=0)
 
         # The daily frame has all the stuff to measure food, etc.
         self.daily_frame = daily.DailyFrame(daily_frame, self.weight)
@@ -147,6 +154,7 @@ class App(ttk.Frame):
 
         self.update_weight_display()
 
+    # Update the display of the weight - happens regularly.
     def update_weight_display(self):
 
         self.weight.update_weight()

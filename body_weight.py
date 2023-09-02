@@ -50,23 +50,18 @@ class WeightHistoryPlotter:
         # Set up the plot
         fig, ax = plt.subplots(figsize=(6.25, 4))
 
-        # Bar Plot
-
+        # Plot starting and target weights
         plt.axhline(y=start_weight, linewidth=1, color='r', zorder=5)
         plt.axhline(y=target_weight, linewidth=1, color='g', zorder=5)
 
         ax.plot(x_data, y_data, '-', color = '#1E90FF', zorder = 10)
-
-        # xfmt = dates.DateFormatter('%d-%m-%y')
-        # ax.xaxis.set_major_formatter(xfmt)
-
-        # ax.locator_params(axis='x', nbins=2)
 
         # rotate and align the tick labels so they look bette
         fig.autofmt_xdate()
 
         # naming the x axis
         matplotlib.pyplot.xlabel('Date')
+
         # naming the y axis
         matplotlib.pyplot.ylabel('Body Weight')
 
@@ -75,11 +70,6 @@ class WeightHistoryPlotter:
 
         # giving a title to my graph
         matplotlib.pyplot.title('Body Weight')
-
-        # ymax = round(start_weight+10, -1)
-        # ymin = round(target_weight -30, -1)
-
-        # matplotlib.pyplot.ylim ([ymin,ymax])
 
         matplotlib.pyplot.savefig(file_name)
 
@@ -166,7 +156,6 @@ class WeightHistoryFrame(tk.Frame):
         self.history_tree["displaycolumns"] = ('Date', 'Weight')
 
         self.history_tree.column('Date', anchor=tk.W, width=110)
-        # self.history_tree.column('Weight', anchor=tk.CENTER, width=80)
         self.history_tree.column('User', anchor=tk.E, width=50)
         self.history_tree.column('Weight', anchor=tk.E, width=50)
 
@@ -195,17 +184,21 @@ class WeightHistoryFrame(tk.Frame):
             weight_plotter.plot_save(weight_history, 94, 75, 'weight_history_graph.jpg')
             #weight_plotter.plot_weight(weight_history, 94, 75)
 
-        self.history_tree.tag_configure('odd', font=("fixedsys", 9), background='gray30')
-        self.history_tree.tag_configure('even', font=("fixedsys", 9))
+        self.history_tree.tag_configure('odd', font=("fixedsys", 8), background='gray30')
+        self.history_tree.tag_configure('even', font=("fixedsys", 8))
 
         index = 0
 
         for record in weight_history:
+
+            # Format the date for better display.
+            day_date = datetime.strptime(record[1][:10], '%Y-%m-%d').strftime('%a %d/%m/%y')
+
             if index % 2:
-                self.history_tree.insert(parent='', index=index, values=(record[0], record[1][:11], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], day_date, record[2], record[3]),
                                          tags='even')
             else:
-                self.history_tree.insert(parent='', index=index, values=(record[0], record[1][:11], record[2], record[3]),
+                self.history_tree.insert(parent='', index=index, values=(record[0], day_date, record[2], record[3]),
                                          tags='odd')
             index = index + 1
 

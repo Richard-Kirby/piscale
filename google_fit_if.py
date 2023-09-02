@@ -25,7 +25,6 @@ from googleapiclient import sample_tools
 logging.config.fileConfig('logging.conf')
 glogger = logging.getLogger('googleifLogger')
 glogger.setLevel(logging.DEBUG)
-print(glogger)
 
 mod_path = pathlib.Path(__file__).parent
 
