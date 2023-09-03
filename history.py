@@ -76,6 +76,7 @@ class CalorieHistoryPlotter:
 
         #plt.plot(x, y_consumed_data)
         #plt.plot(x, y_expended_data)
+
         plt.plot(x, y_moving_average_in, label='kCal Moving Avg In', linewidth=3, color='#46DC23', zorder =5)
         plt.plot(x, y_moving_average_out, label='kCal Moving Avg Out', linewidth=3, color='#B923DC', zorder =5)
 
@@ -90,14 +91,16 @@ class CalorieHistoryPlotter:
         # fig.tight_layout()
 
         # naming the x axis
-        matplotlib.pyplot.xlabel('Date')
+        # matplotlib.pyplot.xlabel('Date', fontsize=11)
 
         # naming the y axis
-        matplotlib.pyplot.ylabel('Calorie History', )
+        matplotlib.pyplot.ylabel('Calories', fontsize=12)
         matplotlib.pyplot.ylim(0, 3000)
 
         # giving a title to my graph
-        matplotlib.pyplot.title('Calorie History')
+        matplotlib.pyplot.title('Calorie History', fontsize=14)
+
+        ax.tick_params(axis='both', which='major', labelsize=10)
 
         matplotlib.pyplot.savefig(file_name)
 

@@ -151,7 +151,7 @@ class WeightHistoryFrame(tk.Frame):
 
         # Create the meal TreeView, which tracks the meal
         self.history_tree = ttk.Treeview(history_tree_frame, columns=('db_id', 'Date', 'User', 'Weight'),
-                                         show='headings', height=16)
+                                         show='headings', height=17)
 
         self.history_tree["displaycolumns"] = ('Date', 'Weight')
 

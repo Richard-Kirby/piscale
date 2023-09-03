@@ -51,7 +51,7 @@ class FoodDataFrame(ttk.Frame):
         )
 
         # Calculates and displays the calorie content of the selected itme given the weight.
-        self.selected_item_cal_label = ttk.Label(self.main_food_frame, text="Selected")  # , font=("Helvetica", 11))
+        self.selected_item_cal_label = ttk.Label(self.main_food_frame, text="")  # , font=("Helvetica", 11))
 
         # Call to the update calories for the selected item. Should update once in a while after that.
         self.update_item_calories()
@@ -59,7 +59,7 @@ class FoodDataFrame(ttk.Frame):
         self.search_box.grid(column=0, row=0, sticky='we')
         self.keyb_button.grid(column=1, row=0, sticky='e')
         self.food_data_tree_frame.grid(column=0, row=1, columnspan=2)
-        self.selected_item_cal_label.grid(column=0, row=2, columnspan=2)
+        self.selected_item_cal_label.grid(column=0, row=2, columnspan=2, sticky ='w')
 
         self.populate_food_data()
 
